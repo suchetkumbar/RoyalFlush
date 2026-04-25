@@ -10,6 +10,7 @@ import {
   PlayerStats,
   settle,
   computeStats,
+  prepareSessionClose,
 } from "@/lib/teenpatti";
 import { Button } from "@/components/ui/button";
 import { PlayerCard } from "./PlayerCard";
@@ -19,6 +20,7 @@ import { SettlementDialog } from "./SettlementDialog";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -79,6 +81,7 @@ export const GameTable = ({ names, boot, maxBet, onExit }: Props) => {
   const [selectedWinner, setSelectedWinner] = useState<string>("");
   const [selectedHand, setSelectedHand] = useState<HandType>("Unknown");
   const [endDialog, setEndDialog] = useState(false);
+  const [sessionPlayers, setSessionPlayers] = useState<Player[]>([]);
   const [settlements, setSettlements] = useState<Settlement[]>([]);
   const [finalStats, setFinalStats] = useState<PlayerStats[]>([]);
   const [confirmEnd, setConfirmEnd] = useState(false);
@@ -355,8 +358,11 @@ export const GameTable = ({ names, boot, maxBet, onExit }: Props) => {
   };
 
   const handleEndGame = () => {
-    setSettlements(settle(players));
-    setFinalStats(computeStats(players, log, history));
+    const closedSession = prepareSessionClose(players, log, round);
+
+    setSessionPlayers(closedSession.players);
+    setSettlements(settle(closedSession.players));
+    setFinalStats(computeStats(closedSession.players, closedSession.log, history));
     setEndDialog(true);
     setConfirmEnd(false);
   };
@@ -366,25 +372,26 @@ export const GameTable = ({ names, boot, maxBet, onExit }: Props) => {
   const showCheck = canShow();
 
   return (
-    <div className="min-h-screen bg-gradient-bg p-4">
+    <div className="min-h-screen bg-gradient-bg p-3 sm:p-4">
       {/* Header */}
-      <header className="flex items-center justify-between mb-4 max-w-7xl mx-auto">
+      <header className="mx-auto mb-4 flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-gradient-brand flex items-center justify-center">
             <Calculator className="w-4 h-4 text-primary-foreground" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-xl font-bold">Teen Patti Tally</h1>
             <p className="text-xs text-muted-foreground">Round {round} · Boot ₹{boot} · Max ₹{maxBet}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={handleUndo}
             disabled={snapshots.length === 0}
             title={snapshots.length > 0 ? `Undo: ${snapshots[snapshots.length - 1].label}` : "Nothing to undo"}
+            className="flex-1 sm:flex-none"
           >
             <Undo2 className="w-4 h-4 mr-1" /> Undo
           </Button>
@@ -393,6 +400,7 @@ export const GameTable = ({ names, boot, maxBet, onExit }: Props) => {
             variant="destructive"
             size="sm"
             onClick={() => setConfirmEnd(true)}
+            className="flex-1 sm:flex-none"
           >
             <Flag className="w-4 h-4 mr-1" /> End Game
           </Button>
@@ -434,44 +442,45 @@ export const GameTable = ({ names, boot, maxBet, onExit }: Props) => {
                 {raiseMin(currentPlayer)}
               </div>
             </div>
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center">
               {currentPlayer.status === "blind" && (
                 <>
-                  <Button onClick={handlePlayBlind} variant="secondary">
+                  <Button onClick={handlePlayBlind} variant="secondary" className="w-full sm:w-auto">
                     <Hand className="w-4 h-4 mr-1" /> Blind
                   </Button>
                   <Button
                     onClick={handleSee}
-                    className="bg-seen text-foreground hover:bg-seen/80"
+                    className="w-full bg-seen text-foreground hover:bg-seen/80 sm:w-auto"
                   >
                     <Eye className="w-4 h-4 mr-1" /> See
                   </Button>
                 </>
               )}
               {currentPlayer.status === "seen" && (
-                <Button onClick={handleCall} variant="secondary">
+                <Button onClick={handleCall} variant="secondary" className="w-full sm:w-auto">
                   <Phone className="w-4 h-4 mr-1" /> Call ₹{callAmount(currentPlayer)}
                 </Button>
               )}
               <Button
                 onClick={() => setRaiseDialog(true)}
-                className="bg-gradient-brand text-primary-foreground"
+                className="w-full bg-gradient-brand text-primary-foreground sm:w-auto"
               >
                 <TrendingUp className="w-4 h-4 mr-1" /> Raise
               </Button>
-              <Button onClick={handleFold} variant="destructive">
+              <Button onClick={handleFold} variant="destructive" className="w-full sm:w-auto">
                 <X className="w-4 h-4 mr-1" /> Fold
               </Button>
               {showCheck.ok && (
                 <Button
                   onClick={handleShow}
-                  className="bg-accent text-accent-foreground"
+                  className="w-full bg-accent text-accent-foreground sm:w-auto"
                 >
                   <Trophy className="w-4 h-4 mr-1" /> Show
                 </Button>
               )}
               <Button
                 variant="outline"
+                className="col-span-2 w-full sm:col-span-1 sm:w-auto"
                 onClick={() => {
                   setSelectedWinner("");
                   setSelectedHand("Unknown");
@@ -592,7 +601,7 @@ export const GameTable = ({ names, boot, maxBet, onExit }: Props) => {
             This will tally everything and show who pays whom. The current round (if any) will
             not be awarded.
           </p>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <Button variant="outline" onClick={() => setConfirmEnd(false)} className="flex-1">
               Cancel
             </Button>
@@ -609,7 +618,7 @@ export const GameTable = ({ names, boot, maxBet, onExit }: Props) => {
       {/* Settlement */}
       <SettlementDialog
         open={endDialog}
-        players={players}
+        players={sessionPlayers}
         settlements={settlements}
         stats={finalStats}
         onNewSession={onExit}

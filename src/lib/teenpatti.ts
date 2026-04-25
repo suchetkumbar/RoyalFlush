@@ -63,6 +63,26 @@ export interface Settlement {
   amount: number;
 }
 
+export interface SessionCloseState {
+  players: Player[];
+  log: ActionLog[];
+}
+
+export function prepareSessionClose(
+  players: Player[],
+  log: ActionLog[],
+  currentRound: number
+): SessionCloseState {
+  return {
+    players: players.map((p) => ({
+      ...p,
+      balance: p.balance + p.totalBetThisRound,
+      totalBetThisRound: 0,
+    })),
+    log: log.filter((entry) => entry.round !== currentRound),
+  };
+}
+
 /**
  * Compute who pays whom from final balances.
  * Sum of balances should be ~0. We greedily match the most-positive with the most-negative.
