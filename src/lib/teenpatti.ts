@@ -1,4 +1,4 @@
-// Teen Patti tally tracker — no card logic, just bets & balances
+// RoyalFlush tracker — no card logic, just bets & balances
 
 export type PlayerStatus = "blind" | "seen" | "folded";
 

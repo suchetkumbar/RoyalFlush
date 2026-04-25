@@ -1,6 +1,6 @@
-# Teen Patti Tally
+# RoyalFlush
 
-Teen Patti Tally is an offline scorekeeper for in-person Teen Patti games. It helps track player actions, round pots, running balances, and the final settlement at the end of a session.
+RoyalFlush is an offline scorekeeper for in-person Teen Patti games. It helps track player actions, round pots, running balances, and the final settlement at the end of a session.
 
 ## What It Does
 
@@ -65,7 +65,7 @@ The app runs on `http://localhost:8080`.
 src/
   components/    Reusable UI and game-specific components
   hooks/         Shared React hooks
-  lib/           Core Teen Patti tally types and calculations
+  lib/           Core RoyalFlush types and calculations
   pages/         Route-level page components
   test/          Test setup
 ```

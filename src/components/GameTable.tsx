@@ -380,7 +380,7 @@ export const GameTable = ({ names, boot, maxBet, onExit }: Props) => {
             <Calculator className="w-4 h-4 text-primary-foreground" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-xl font-bold">Teen Patti Tally</h1>
+            <h1 className="text-xl font-bold">RoyalFlush</h1>
             <p className="text-xs text-muted-foreground">Round {round} · Boot ₹{boot} · Max ₹{maxBet}</p>
           </div>
         </div>

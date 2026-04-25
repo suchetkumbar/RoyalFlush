@@ -14,7 +14,7 @@ export const Disclaimer = ({ onStart }: Props) => (
         </div>
       </div>
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Teen Patti Tally</h1>
+        <h1 className="text-3xl font-bold text-foreground">RoyalFlush</h1>
         <p className="text-sm text-muted-foreground mt-1">Offline scorekeeper for in-person games</p>
       </div>
       <div className="border-t border-b border-border py-5 space-y-2">
