@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { computeStats, prepareSessionClose, settle, type ActionLog, type Player, type RoundRecord } from "./teenpatti";
+import {
+  applyManualRound,
+  computeStats,
+  getRoundStarterIndex,
+  prepareSessionClose,
+  settle,
+  type ActionLog,
+  type Player,
+  type RoundRecord,
+} from "./teenpatti";
 
 describe("prepareSessionClose", () => {
   it("refunds the unfinished round before settlement", () => {
@@ -43,5 +52,42 @@ describe("prepareSessionClose", () => {
     expect(stats.find((p) => p.name === "Ayush")?.roundsPlayed).toBe(1);
     expect(stats.find((p) => p.name === "Aman")?.roundsPlayed).toBe(1);
     expect(stats.find((p) => p.name === "Suchet")?.roundsPlayed).toBe(1);
+  });
+});
+
+describe("manual helpers", () => {
+  it("rotates the round starter through the entered order", () => {
+    expect(getRoundStarterIndex(1, 4)).toBe(0);
+    expect(getRoundStarterIndex(2, 4)).toBe(1);
+    expect(getRoundStarterIndex(4, 4)).toBe(3);
+    expect(getRoundStarterIndex(5, 4)).toBe(0);
+  });
+
+  it("applies a manual round from entered bet totals", () => {
+    const players: Player[] = [
+      { id: 0, name: "A", status: "blind", balance: 0, totalBetThisRound: 0 },
+      { id: 1, name: "B", status: "blind", balance: 0, totalBetThisRound: 0 },
+      { id: 2, name: "C", status: "blind", balance: 0, totalBetThisRound: 0 },
+    ];
+
+    const result = applyManualRound(
+      players,
+      1,
+      { 0: 10, 1: 15, 2: 5 },
+      1,
+      "Pair",
+      123
+    );
+
+    expect(result.pot).toBe(30);
+    expect(result.players.map((player) => player.balance)).toEqual([-10, 15, -5]);
+    expect(result.history).toEqual({
+      round: 1,
+      winnerName: "B",
+      handType: "Pair",
+      pot: 30,
+      players: 3,
+    });
+    expect(result.log.map((entry) => entry.action)).toEqual(["manual", "manual", "manual", "win"]);
   });
 });

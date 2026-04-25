@@ -1,6 +1,7 @@
 // RoyalFlush tracker — no card logic, just bets & balances
 
 export type PlayerStatus = "blind" | "seen" | "folded";
+export type GameMode = "auto" | "manual";
 
 export interface Player {
   id: number;
@@ -37,6 +38,7 @@ export type ActionType =
   | "raise"
   | "fold"
   | "show"
+  | "manual"
   | "win";
 
 export interface ActionLog {
@@ -66,6 +68,78 @@ export interface Settlement {
 export interface SessionCloseState {
   players: Player[];
   log: ActionLog[];
+}
+
+export interface ManualRoundResult {
+  players: Player[];
+  pot: number;
+  log: ActionLog[];
+  history: RoundRecord;
+}
+
+export function getRoundStarterIndex(roundNum: number, playerCount: number): number {
+  if (playerCount <= 0) return 0;
+  return (roundNum - 1) % playerCount;
+}
+
+export function applyManualRound(
+  players: Player[],
+  round: number,
+  betsByPlayerId: Record<number, number>,
+  winnerId: number,
+  handType: HandType,
+  timestamp = Date.now()
+): ManualRoundResult {
+  const entries = players.map((player) => {
+    const amount = Math.max(0, betsByPlayerId[player.id] ?? 0);
+    return { player, amount };
+  });
+  const pot = entries.reduce((sum, entry) => sum + entry.amount, 0);
+
+  const updatedPlayers = entries.map(({ player, amount }) => ({
+    ...player,
+    balance: player.balance - amount,
+    totalBetThisRound: amount,
+    status: amount > 0 ? ("blind" as const) : ("folded" as const),
+  }));
+  const winner = updatedPlayers.find((player) => player.id === winnerId);
+  if (!winner) {
+    throw new Error("Winner not found");
+  }
+  winner.balance += pot;
+
+  return {
+    players: updatedPlayers,
+    pot,
+    log: [
+      ...entries
+        .filter((entry) => entry.amount > 0)
+        .map((entry) => ({
+          id: `${timestamp}-${entry.player.id}-manual`,
+          ts: timestamp,
+          round,
+          playerName: entry.player.name,
+          action: "manual" as const,
+          amount: entry.amount,
+        })),
+      {
+        id: `${timestamp}-${winnerId}-manual-win`,
+        ts: timestamp,
+        round,
+        playerName: winner.name,
+        action: "win" as const,
+        amount: pot,
+        note: handType,
+      },
+    ],
+    history: {
+      round,
+      winnerName: winner.name,
+      handType,
+      pot,
+      players: entries.filter((entry) => entry.amount > 0).length || 1,
+    },
+  };
 }
 
 export function prepareSessionClose(
@@ -141,7 +215,7 @@ export function computeStats(
   return players.map((p) => {
     const myLog = log.filter((l) => l.playerName === p.name);
     const wagered = myLog
-      .filter((l) => ["boot", "blind", "call", "raise", "show"].includes(l.action))
+      .filter((l) => ["boot", "blind", "call", "raise", "show", "manual"].includes(l.action))
       .reduce((s, l) => s + (l.amount || 0), 0);
     const folds = myLog.filter((l) => l.action === "fold").length;
     const shows = myLog.filter((l) => l.action === "show").length;

@@ -15,16 +15,15 @@ export const InfoModal = () => (
       </DialogHeader>
       <div className="space-y-3 text-sm">
         <p>
-          Cards are played physically. This app only tracks bets, fold status, round winners
-          and computes who owes whom at the end.
+          Cards are played physically. This app only tracks bets, round winners, and computes
+          who owes whom at the end.
         </p>
         <p>
-          On each player's turn, tap their action: <strong>Blind</strong>, <strong>See</strong>,
-          <strong> Call</strong>, <strong>Raise</strong>, <strong>Fold</strong>, or <strong>Show</strong>.
-          Bet amounts auto-deduct from their running net.
+          In <strong>Auto</strong> mode, use the action buttons turn by turn. In <strong>Manual</strong>
+          mode, enter each player's total round contribution and then award the pot in one step.
         </p>
         <p>
-          When a round ends, choose the winner and their hand type. The pot is awarded.
+          The starting player rotates every round in the same order the players were entered.
         </p>
         <div>
           <p className="font-semibold text-brand mb-1">Hand Ranking (high → low)</p>
