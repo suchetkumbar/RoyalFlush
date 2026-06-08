@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActionLog,
   ActionType,
@@ -16,10 +16,12 @@ import {
 } from "@/lib/teenpatti";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ExportDialog } from "./ExportDialog";
 import { HistoryPanel } from "./HistoryPanel";
 import { InfoModal } from "./InfoModal";
 import { PlayerCard } from "./PlayerCard";
 import { SettlementDialog } from "./SettlementDialog";
+import { clearStoredSession, saveStoredSession, type StoredSession } from "@/lib/storage";
 import {
   Dialog,
   DialogContent,
@@ -69,34 +71,49 @@ interface Props {
   boot: number;
   maxBet: number;
   mode: GameMode;
+  initialSession?: StoredSession | null;
   onExit: () => void;
 }
 
 const currency = (amount: number) => `Rs${amount}`;
 
-export const GameTable = ({ names, boot, maxBet, mode, onExit }: Props) => {
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [pot, setPot] = useState(0);
-  const [currentStake, setCurrentStake] = useState(Math.max(1, boot));
-  const [turnIdx, setTurnIdx] = useState(0);
-  const [round, setRound] = useState(0);
-  const [history, setHistory] = useState<RoundRecord[]>([]);
-  const [log, setLog] = useState<ActionLog[]>([]);
-  const [actionsCount, setActionsCount] = useState(0);
+export const GameTable = ({
+  names,
+  boot,
+  maxBet,
+  mode,
+  initialSession,
+  onExit,
+}: Props) => {
+  const initialState = initialSession?.state;
+
+  const [players, setPlayers] = useState<Player[]>(() => initialState?.players ?? []);
+  const [pot, setPot] = useState(() => initialState?.pot ?? 0);
+  const [currentStake, setCurrentStake] = useState(() => initialState?.currentStake ?? Math.max(1, boot));
+  const [turnIdx, setTurnIdx] = useState(() => initialState?.turnIdx ?? 0);
+  const [round, setRound] = useState(() => initialState?.round ?? 0);
+  const [history, setHistory] = useState<RoundRecord[]>(() => initialState?.history ?? []);
+  const [log, setLog] = useState<ActionLog[]>(() => initialState?.log ?? []);
+  const [actionsCount, setActionsCount] = useState(() => initialState?.actionsCount ?? 0);
 
   const [raiseDialog, setRaiseDialog] = useState(false);
   const [winnerDialog, setWinnerDialog] = useState(false);
   const [manualDialog, setManualDialog] = useState(false);
   const [selectedWinner, setSelectedWinner] = useState("");
   const [selectedHand, setSelectedHand] = useState<HandType>("Unknown");
-  const [manualBets, setManualBets] = useState<Record<number, number>>({});
+  const [manualBets, setManualBets] = useState<Record<number, number>>(() => initialState?.manualBets ?? {});
 
   // Manual iteration state
-  const [manualIteration, setManualIteration] = useState(1);
-  const [manualFolded, setManualFolded] = useState<Set<number>>(new Set());
-  const [manualCumulativeBets, setManualCumulativeBets] = useState<Record<number, number>>({});
-  const [manualRoundPot, setManualRoundPot] = useState(0);
-  const [manualWinnerStep, setManualWinnerStep] = useState(false);
+  const [manualIteration, setManualIteration] = useState(() => initialState?.manualIteration ?? 1);
+  const [manualFolded, setManualFolded] = useState<Set<number>>(
+    () => new Set(initialState?.manualFolded ?? [])
+  );
+  const [manualCumulativeBets, setManualCumulativeBets] = useState<Record<number, number>>(
+    () => initialState?.manualCumulativeBets ?? {}
+  );
+  const [manualRoundPot, setManualRoundPot] = useState(() => initialState?.manualRoundPot ?? 0);
+  const [manualWinnerStep, setManualWinnerStep] = useState(() => initialState?.manualWinnerStep ?? false);
+  const [exportOpen, setExportOpen] = useState(false);
 
   // Iteration-level undo snapshots (within a single manual round)
   interface IterationSnapshot {
@@ -219,6 +236,8 @@ export const GameTable = ({ names, boot, maxBet, mode, onExit }: Props) => {
   }, [boot, mode, resetManualState]);
 
   useEffect(() => {
+    if (initialState) return;
+
     const initialPlayers: Player[] = names.map((name, index) => ({
       id: index,
       name,
@@ -228,10 +247,63 @@ export const GameTable = ({ names, boot, maxBet, mode, onExit }: Props) => {
     }));
     setRound(1);
     startRound(initialPlayers, 1);
-  }, [names, startRound]);
+  }, [names, startRound, initialState]);
 
   const activePlayers = players.filter((player) => player.status !== "folded");
   const currentPlayer = players[turnIdx];
+
+  const persistentSession = useMemo(() => {
+    return {
+      version: 1,
+      names,
+      boot,
+      maxBet,
+      mode,
+      createdAt: initialSession?.createdAt ?? Date.now(),
+      updatedAt: Date.now(),
+      state: {
+        players,
+        pot,
+        currentStake,
+        turnIdx,
+        round,
+        history,
+        log,
+        actionsCount,
+        manualBets,
+        manualIteration,
+        manualFolded: Array.from(manualFolded),
+        manualCumulativeBets,
+        manualRoundPot,
+        manualWinnerStep,
+      },
+    };
+  }, [
+    names,
+    boot,
+    maxBet,
+    mode,
+    players,
+    pot,
+    currentStake,
+    turnIdx,
+    round,
+    history,
+    log,
+    actionsCount,
+    manualBets,
+    manualIteration,
+    manualFolded,
+    manualCumulativeBets,
+    manualRoundPot,
+    manualWinnerStep,
+    initialSession?.createdAt,
+  ]);
+
+  useEffect(() => {
+    if (names.length === 0) return;
+    saveStoredSession(persistentSession);
+  }, [names, persistentSession]);
 
   const callAmount = (player: Player): number => {
     const raw = player.status === "seen" ? currentStake : Math.max(boot, Math.floor(currentStake / 2));
@@ -773,6 +845,14 @@ export const GameTable = ({ names, boot, maxBet, mode, onExit }: Props) => {
           >
             <Undo2 className="mr-1 h-4 w-4" /> Undo
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setExportOpen(true)}
+            className="flex-1 sm:flex-none"
+          >
+            <ClipboardPen className="mr-1 h-4 w-4" /> Export
+          </Button>
           <InfoModal />
           <Button
             variant="destructive"
@@ -1239,6 +1319,8 @@ export const GameTable = ({ names, boot, maxBet, mode, onExit }: Props) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ExportDialog open={exportOpen} session={persistentSession} onOpenChange={setExportOpen} />
 
       <SettlementDialog
         open={endDialog}

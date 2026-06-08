@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 
 DEPLOY_VERCEL.md
+implementation_plan.md
+memory.md

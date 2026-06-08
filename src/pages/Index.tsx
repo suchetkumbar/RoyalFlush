@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Disclaimer } from "@/components/Disclaimer";
 import { Setup } from "@/components/Setup";
 import { GameTable } from "@/components/GameTable";
 import { GameMode } from "@/lib/teenpatti";
+import { clearStoredSession, loadStoredSession, type StoredSession } from "@/lib/storage";
 
 type Stage = "disclaimer" | "setup" | "game";
 
@@ -12,27 +13,47 @@ const Index = () => {
   const [boot, setBoot] = useState(1);
   const [maxBet, setMaxBet] = useState(100);
   const [mode, setMode] = useState<GameMode>("auto");
+  const [loadedSession, setLoadedSession] = useState<StoredSession | null>(null);
+
+  useEffect(() => {
+    const session = loadStoredSession();
+    if (session) {
+      setNames(session.names);
+      setBoot(session.boot);
+      setMaxBet(session.maxBet);
+      setMode(session.mode);
+      setLoadedSession(session);
+      setStage("game");
+    }
+  }, []);
+
+  const handleStart = (n: string[], b: number, m: number, gameMode: GameMode) => {
+    setNames(n);
+    setBoot(b);
+    setMaxBet(m);
+    setMode(gameMode);
+    setLoadedSession(null);
+    setStage("game");
+  };
+
+  const handleExit = () => {
+    clearStoredSession();
+    setLoadedSession(null);
+    setStage("setup");
+  };
 
   if (stage === "disclaimer") return <Disclaimer onStart={() => setStage("setup")} />;
   if (stage === "setup")
-    return (
-      <Setup
-        onStart={(n, b, m, gameMode) => {
-          setNames(n);
-          setBoot(b);
-          setMaxBet(m);
-          setMode(gameMode);
-          setStage("game");
-        }}
-      />
-    );
+    return <Setup onStart={handleStart} />;
+
   return (
     <GameTable
       names={names}
       boot={boot}
       maxBet={maxBet}
       mode={mode}
-      onExit={() => setStage("setup")}
+      initialSession={loadedSession}
+      onExit={handleExit}
     />
   );
 };
