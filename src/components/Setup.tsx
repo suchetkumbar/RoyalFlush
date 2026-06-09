@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { GameMode } from "@/lib/teenpatti";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface Props {
   onStart: (names: string[], boot: number, maxBet: number, mode: GameMode) => void;
@@ -68,9 +69,12 @@ export const Setup = ({ onStart }: Props) => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-bg p-4 sm:p-6">
       <div className="my-6 w-full max-w-md space-y-5 rounded-2xl border border-border bg-gradient-card p-6 shadow-glow">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-center text-2xl font-bold text-foreground">New Session</h2>
-          <Button variant="outline" size="sm" onClick={() => navigate("/sessions")}>Saved Sessions</Button>
+          <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-end">
+            <Button variant="outline" size="sm" onClick={() => navigate("/sessions")}>Saved Sessions</Button>
+            <ThemeToggle />
+          </div>
         </div>
 
         <div className="space-y-2">

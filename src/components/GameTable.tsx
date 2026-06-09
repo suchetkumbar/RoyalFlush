@@ -21,6 +21,7 @@ import { HistoryPanel } from "./HistoryPanel";
 import { InfoModal } from "./InfoModal";
 import { PlayerCard } from "./PlayerCard";
 import { SettlementDialog } from "./SettlementDialog";
+import { ThemeToggle } from "./ThemeToggle";
 import {
   archiveStoredSession,
   clearStoredSession,
@@ -862,6 +863,7 @@ export const GameTable = ({
             <ClipboardPen className="mr-1 h-4 w-4" /> Export
           </Button>
           <InfoModal />
+          <ThemeToggle />
           <Button
             variant="destructive"
             size="sm"
