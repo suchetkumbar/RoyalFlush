@@ -21,7 +21,12 @@ import { HistoryPanel } from "./HistoryPanel";
 import { InfoModal } from "./InfoModal";
 import { PlayerCard } from "./PlayerCard";
 import { SettlementDialog } from "./SettlementDialog";
-import { clearStoredSession, saveStoredSession, type StoredSession } from "@/lib/storage";
+import {
+  archiveStoredSession,
+  clearStoredSession,
+  saveStoredSession,
+  type StoredSession,
+} from "@/lib/storage";
 import {
   Dialog,
   DialogContent,
@@ -254,6 +259,7 @@ export const GameTable = ({
 
   const persistentSession = useMemo(() => {
     return {
+      id: initialSession?.id ?? crypto.randomUUID?.() ?? `${Date.now()}`,
       version: 1,
       names,
       boot,
@@ -298,6 +304,7 @@ export const GameTable = ({
     manualRoundPot,
     manualWinnerStep,
     initialSession?.createdAt,
+    initialSession?.id,
   ]);
 
   useEffect(() => {
@@ -812,6 +819,7 @@ export const GameTable = ({
     setFinalStats(computeStats(closedSession.players, closedSession.log, history));
     setEndDialog(true);
     setConfirmEnd(false);
+    archiveStoredSession(persistentSession);
   };
 
   if (!currentPlayer) return null;

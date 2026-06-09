@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,10 +63,15 @@ export const Setup = ({ onStart }: Props) => {
     onStart(cleaned, boot, maxBet, mode);
   };
 
+  const navigate = useNavigate();
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-bg p-4 sm:p-6">
       <div className="my-6 w-full max-w-md space-y-5 rounded-2xl border border-border bg-gradient-card p-6 shadow-glow">
-        <h2 className="text-center text-2xl font-bold text-foreground">New Session</h2>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-center text-2xl font-bold text-foreground">New Session</h2>
+          <Button variant="outline" size="sm" onClick={() => navigate("/sessions")}>Saved Sessions</Button>
+        </div>
 
         <div className="space-y-2">
           <Label>Mode</Label>
