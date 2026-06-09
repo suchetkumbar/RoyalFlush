@@ -20,17 +20,21 @@ export const SessionHistory = ({ onClose }: Props) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setSessions(loadStoredSessionHistory());
+    const loadHistory = async () => {
+      setSessions(await loadStoredSessionHistory());
+    };
+
+    void loadHistory();
   }, []);
 
-  const handleResume = (session: StoredSession) => {
-    saveStoredSession(session);
+  const handleResume = async (session: StoredSession) => {
+    await saveStoredSession(session);
     navigate("/");
   };
 
-  const handleDelete = (id: string) => {
-    deleteStoredSession(id);
-    setSessions(loadStoredSessionHistory());
+  const handleDelete = async (id: string) => {
+    await deleteStoredSession(id);
+    setSessions(await loadStoredSessionHistory());
   };
 
   return (

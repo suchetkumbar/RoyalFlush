@@ -309,7 +309,7 @@ export const GameTable = ({
 
   useEffect(() => {
     if (names.length === 0) return;
-    saveStoredSession(persistentSession);
+    void saveStoredSession(persistentSession);
   }, [names, persistentSession]);
 
   const callAmount = (player: Player): number => {
@@ -819,7 +819,7 @@ export const GameTable = ({
     setFinalStats(computeStats(closedSession.players, closedSession.log, history));
     setEndDialog(true);
     setConfirmEnd(false);
-    archiveStoredSession(persistentSession);
+    void archiveStoredSession(persistentSession);
   };
 
   if (!currentPlayer) return null;

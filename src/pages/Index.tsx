@@ -16,15 +16,19 @@ const Index = () => {
   const [loadedSession, setLoadedSession] = useState<StoredSession | null>(null);
 
   useEffect(() => {
-    const session = loadStoredSession();
-    if (session) {
-      setNames(session.names);
-      setBoot(session.boot);
-      setMaxBet(session.maxBet);
-      setMode(session.mode);
-      setLoadedSession(session);
-      setStage("game");
-    }
+    const restoreSession = async () => {
+      const session = await loadStoredSession();
+      if (session) {
+        setNames(session.names);
+        setBoot(session.boot);
+        setMaxBet(session.maxBet);
+        setMode(session.mode);
+        setLoadedSession(session);
+        setStage("game");
+      }
+    };
+
+    void restoreSession();
   }, []);
 
   const handleStart = (n: string[], b: number, m: number, gameMode: GameMode) => {
@@ -37,7 +41,7 @@ const Index = () => {
   };
 
   const handleExit = () => {
-    clearStoredSession();
+    void clearStoredSession();
     setLoadedSession(null);
     setStage("setup");
   };
