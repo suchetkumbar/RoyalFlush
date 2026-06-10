@@ -843,35 +843,40 @@ export const GameTable = ({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleUndo}
-            disabled={snapshots.length === 0}
-            title={snapshots.length > 0 ? `Undo: ${snapshots[snapshots.length - 1].label}` : "Nothing to undo"}
-            className="flex-1 sm:flex-none"
-          >
-            <Undo2 className="mr-1 h-4 w-4" /> Undo
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setExportOpen(true)}
-            className="flex-1 sm:flex-none"
-          >
-            <ClipboardPen className="mr-1 h-4 w-4" /> Export
-          </Button>
-          <InfoModal />
-          <ThemeToggle />
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setConfirmEnd(true)}
-            className="flex-1 sm:flex-none"
-          >
-            <Flag className="mr-1 h-4 w-4" /> End Game
-          </Button>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleUndo}
+              disabled={snapshots.length === 0}
+              title={snapshots.length > 0 ? `Undo: ${snapshots[snapshots.length - 1].label}` : "Nothing to undo"}
+              className="w-full min-w-[9rem] sm:w-auto"
+            >
+              <Undo2 className="mr-1 h-4 w-4" /> Undo
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setExportOpen(true)}
+              className="w-full min-w-[9rem] sm:w-auto"
+            >
+              <ClipboardPen className="mr-1 h-4 w-4" /> Export
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setConfirmEnd(true)}
+              className="w-full min-w-[9rem] sm:w-auto"
+            >
+              <Flag className="mr-1 h-4 w-4" /> End Game
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <InfoModal />
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
