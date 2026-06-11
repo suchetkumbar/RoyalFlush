@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Trash2, Play } from "lucide-react";
 import {
+  clearStoredSessionHistory,
   deleteStoredSession,
   loadStoredSessionHistory,
   saveStoredSession,
@@ -21,7 +22,8 @@ export const SessionHistory = ({ onClose }: Props) => {
 
   useEffect(() => {
     const loadHistory = async () => {
-      setSessions(await loadStoredSessionHistory());
+      const history = await loadStoredSessionHistory();
+      setSessions(history.sort((a, b) => b.updatedAt - a.updatedAt));
     };
 
     void loadHistory();
@@ -48,6 +50,18 @@ export const SessionHistory = ({ onClose }: Props) => {
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => navigate(-1)}>
               <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (sessions.length === 0) return;
+                const confirmed = window.confirm("Clear all saved sessions? This cannot be undone.");
+                if (!confirmed) return;
+                await clearStoredSessionHistory();
+                setSessions([]);
+              }}
+            >
+              <Trash2 className="mr-2 h-4 w-4" /> Clear All
             </Button>
           </div>
         </div>

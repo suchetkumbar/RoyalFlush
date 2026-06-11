@@ -252,3 +252,22 @@ export async function deleteStoredSession(id: string) {
     console.warn("Failed to delete archived session from IndexedDB", error);
   }
 }
+
+export async function clearStoredSessionHistory() {
+  if (!isBrowser) return;
+
+  if (!window.indexedDB) {
+    try {
+      window.localStorage.removeItem(HISTORY_KEY);
+    } catch (error) {
+      console.warn("Failed to clear session history from localStorage", error);
+    }
+    return;
+  }
+
+  try {
+    await withObjectStore<void>(HISTORY_STORE, "readwrite", (store) => store.clear());
+  } catch (error) {
+    console.warn("Failed to clear session history from IndexedDB", error);
+  }
+}
