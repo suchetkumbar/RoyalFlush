@@ -20,12 +20,12 @@ export const SessionHistory = ({ onClose }: Props) => {
   const [sessions, setSessions] = useState<StoredSession[]>([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const loadHistory = async () => {
-      const history = await loadStoredSessionHistory();
-      setSessions(history.sort((a, b) => b.updatedAt - a.updatedAt));
-    };
+  const loadHistory = async () => {
+    const history = await loadStoredSessionHistory();
+    setSessions(history.sort((a, b) => b.updatedAt - a.updatedAt));
+  };
 
+  useEffect(() => {
     void loadHistory();
   }, []);
 
@@ -47,22 +47,28 @@ export const SessionHistory = ({ onClose }: Props) => {
             <h1 className="text-2xl font-bold">Saved Sessions</h1>
             <p className="text-sm text-muted-foreground">Resume or delete previously completed sessions.</p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={() => navigate(-1)}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={async () => {
-                if (sessions.length === 0) return;
-                const confirmed = window.confirm("Clear all saved sessions? This cannot be undone.");
-                if (!confirmed) return;
-                await clearStoredSessionHistory();
-                setSessions([]);
-              }}
-            >
-              <Trash2 className="mr-2 h-4 w-4" /> Clear All
-            </Button>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="rounded-full bg-muted px-3 py-1 text-sm text-foreground/80">
+              {sessions.length} saved session{sessions.length === 1 ? "" : "s"}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={() => navigate(-1)} className="min-w-[9rem]">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  if (sessions.length === 0) return;
+                  const confirmed = window.confirm("Clear all saved sessions? This cannot be undone.");
+                  if (!confirmed) return;
+                  await clearStoredSessionHistory();
+                  setSessions([]);
+                }}
+                className="min-w-[9rem]"
+              >
+                <Trash2 className="mr-2 h-4 w-4" /> Clear All
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -71,10 +77,10 @@ export const SessionHistory = ({ onClose }: Props) => {
             No saved sessions yet. Finish a game to archive a session.
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             {sessions.map((session) => (
               <Card key={session.id} className="rounded-3xl border-border bg-gradient-card p-4">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex h-full flex-col justify-between gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Saved on {format(new Date(session.updatedAt), "PPpp")}</p>
                     <h2 className="text-lg font-semibold text-foreground">{session.names.join(", ")}</h2>
@@ -82,11 +88,11 @@ export const SessionHistory = ({ onClose }: Props) => {
                       {session.mode === "auto" ? "Auto mode" : "Manual mode"} · Boot {session.boot} · Max {session.maxBet}
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button onClick={() => handleResume(session)}>
+                  <div className="mt-auto flex flex-col gap-2 sm:flex-row sm:justify-end">
+                    <Button onClick={() => handleResume(session)} className="w-full sm:w-auto">
                       <Play className="mr-2 h-4 w-4" /> Resume
                     </Button>
-                    <Button variant="destructive" onClick={() => handleDelete(session.id)}>
+                    <Button variant="destructive" onClick={() => handleDelete(session.id)} className="w-full sm:w-auto">
                       <Trash2 className="mr-2 h-4 w-4" /> Delete
                     </Button>
                   </div>
