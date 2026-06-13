@@ -72,6 +72,7 @@ export const Setup = ({ onStart }: Props) => {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-center text-2xl font-bold text-foreground">New Session</h2>
           <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-end">
+            <Button variant="outline" size="sm" onClick={() => navigate("/analytics")}>Analytics</Button>
             <Button variant="outline" size="sm" onClick={() => navigate("/sessions")}>Saved Sessions</Button>
             <ThemeToggle />
           </div>

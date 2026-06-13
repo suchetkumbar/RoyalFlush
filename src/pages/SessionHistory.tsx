@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Trash2, Play } from "lucide-react";
+import { ArrowLeft, Trash2, Play, BarChart3 } from "lucide-react";
 import {
   clearStoredSessionHistory,
   deleteStoredSession,
@@ -52,6 +52,9 @@ export const SessionHistory = ({ onClose }: Props) => {
               {sessions.length} saved session{sessions.length === 1 ? "" : "s"}
             </div>
             <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={() => navigate("/analytics")} className="min-w-[9rem]">
+                <BarChart3 className="mr-2 h-4 w-4" /> Analytics
+              </Button>
               <Button variant="outline" onClick={() => navigate(-1)} className="min-w-[9rem]">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back
               </Button>
