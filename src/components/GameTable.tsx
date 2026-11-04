@@ -166,8 +166,18 @@ export const GameTable = ({ names, boot, maxBet, mode, initialSession, onExit }:
 
   if (!player) return null;
 
+  // One concise screen-reader announcement per state change (visual UI shows the same info).
+  const announcement = auto
+    ? `${lastUndo ? `${lastUndo.label}. ` : ""}Pot ${formatMoney(state.pot)}. ${player.name}'s turn, ${player.status}, call ${formatMoney(
+        callAmount(config, state, player)
+      )}.`
+    : `Round ${state.round}, iteration ${state.manual.iteration}. Pot ${formatMoney(state.pot)}.`;
+
   return (
     <div className="min-h-screen bg-gradient-bg p-3 pb-6 sm:p-4">
+      <p className="sr-only" aria-live="polite" aria-atomic="true">
+        {announcement}
+      </p>
       <GameHeader
         subtitle={`Round ${state.round} · ${
           auto ? `Auto · Boot ${formatMoney(boot)} · Max ${formatMoney(maxBet)}` : `Manual · Starter ${starter?.name ?? "-"}`

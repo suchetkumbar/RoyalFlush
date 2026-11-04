@@ -62,6 +62,7 @@ describe("GameTable", () => {
     expect(turn()).toBe("A");
     fireEvent.keyDown(window, { key: "b" });
     expect(turn()).toBe("B");
+    expect(screen.getByText(/A blind\. Pot ₹4\. B's turn, blind, call ₹1\./)).toHaveAttribute("aria-live", "polite");
     fireEvent.keyDown(window, { key: "f" });
     expect(turn()).toBe("C");
     fireEvent.keyDown(window, { key: "z", ctrlKey: true });

@@ -32,6 +32,7 @@ export const PlayerCard = ({ player, isCurrent, isStarter = false, showStatus = 
 
   return (
     <div
+      role="group"
       aria-current={active ? "true" : undefined}
       aria-label={`${player.name}, ${STATUS_LABEL[player.status]}, balance ${formatSignedMoney(player.balance)}${
         active ? ", current turn" : ""

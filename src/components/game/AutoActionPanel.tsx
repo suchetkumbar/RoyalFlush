@@ -31,7 +31,7 @@ export const AutoActionPanel = ({
   onDeclareWinner,
 }: Props) => (
   <div className="sticky bottom-2 z-20 space-y-3 rounded-xl border border-brand/40 bg-card/95 p-3 shadow-soft backdrop-blur supports-[backdrop-filter]:bg-card/85 sm:static sm:bg-gradient-card sm:p-4">
-    <div className="text-center" aria-live="polite">
+    <div className="text-center">
       <div className="hidden text-xs uppercase text-muted-foreground sm:block">Current Turn</div>
       <div className="text-xl font-bold text-brand">{player.name}</div>
       <div className="text-xs capitalize text-muted-foreground">
