@@ -22,7 +22,8 @@ const downloadFile = (filename: string, content: string, mimeType: string) => {
 export const getSessionJson = (session: StoredSession) => JSON.stringify(session, null, 2);
 
 export const downloadSessionJson = (session: StoredSession) => {
-  downloadFile("royalflush-session.json", getSessionJson(session), "application/json");
+  const day = new Date(session.createdAt).toISOString().slice(0, 10);
+  downloadFile(`royalflush-${day}-${session.id.slice(0, 8)}.json`, getSessionJson(session), "application/json");
 };
 
 export const getActionLogCsv = (log: ActionLog[]) => {

@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, formatDistanceStrict } from "date-fns";
-import { ArrowLeft, BarChart3, Play, Trash2, Trophy } from "lucide-react";
+import { ArrowLeft, BarChart3, Play, Trash2, Trophy, Upload } from "lucide-react";
+import { toast } from "sonner";
+import { parseSessionImport } from "@/lib/importSession";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/game/ConfirmDialog";
@@ -24,6 +26,23 @@ export const SessionHistory = () => {
   const [pendingDelete, setPendingDelete] = useState<StoredSession | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const navigate = useNavigate();
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  const handleImport = async (file: File | undefined) => {
+    if (!file) return;
+    const result = parseSessionImport(await file.text());
+    if (result.ok === false) {
+      toast.error(result.error);
+      return;
+    }
+    const existed = sessions.some((s) => s.id === result.session.id);
+    await archiveStoredSession(result.session);
+    await loadHistory();
+    toast.success(
+      `${existed ? "Updated" : "Imported"} session with ${result.session.names.join(", ")}` +
+        (result.session.status === "active" ? " — you can resume it" : "")
+    );
+  };
 
   const loadHistory = async () => {
     const history = await loadStoredSessionHistory();
@@ -66,6 +85,21 @@ export const SessionHistory = () => {
               <Button variant="outline" onClick={() => navigate("/analytics")} className="min-w-[9rem]">
                 <BarChart3 className="mr-2 h-4 w-4" /> Analytics
               </Button>
+              <Button variant="outline" onClick={() => fileInput.current?.click()} className="min-w-[9rem]">
+                <Upload className="mr-2 h-4 w-4" /> Import
+              </Button>
+              <input
+                ref={fileInput}
+                type="file"
+                accept="application/json,.json"
+                className="hidden"
+                aria-hidden
+                tabIndex={-1}
+                onChange={(e) => {
+                  void handleImport(e.target.files?.[0]);
+                  e.target.value = "";
+                }}
+              />
               <Button variant="outline" onClick={() => navigate("/")} className="min-w-[9rem]">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back
               </Button>
