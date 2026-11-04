@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calculator, Download, Flag, Info, Moon, MoreVertical, SunMedium, Undo2 } from "lucide-react";
+import { Download, Flag, Info, Moon, MoreVertical, SunMedium, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { InfoModal } from "../InfoModal";
+import { Logo } from "../Logo";
 import { THEME_SHORTCUT_LABEL, useThemeSwitch } from "@/hooks/useThemeSwitch";
 
 interface Props {
@@ -27,9 +28,7 @@ export const GameHeader = ({ subtitle, undoLabel, onUndo, onExport, onEnd }: Pro
   return (
     <header className="mx-auto mb-4 flex max-w-7xl items-center justify-between gap-3">
       <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-brand">
-          <Calculator className="h-4 w-4 text-primary-foreground" />
-        </div>
+        <Logo />
         <div className="min-w-0">
           <h1 className="text-lg font-bold sm:text-xl">RoyalFlush</h1>
           <p className="truncate text-xs text-muted-foreground">{subtitle}</p>

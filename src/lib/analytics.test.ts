@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeAnalytics } from "./analytics";
+import { computeAnalytics, filterByRange } from "./analytics";
 import type { StoredSession } from "./storage";
 
 const makeSession = (): StoredSession => ({
@@ -46,5 +46,44 @@ describe("computeAnalytics", () => {
   it("averages pots won, not net earnings", () => {
     const { players } = computeAnalytics([makeSession()]);
     expect(players.find((p) => p.name === "A")!.avgWinAmount).toBe(6);
+  });
+
+  it("merges the same player across sessions regardless of case and uses final balances", () => {
+    const first = makeSession();
+    const second: StoredSession = {
+      ...makeSession(),
+      id: "s2",
+      names: ["a ", "B"],
+      createdAt: 10,
+      final: {
+        players: [
+          { id: 0, name: "a ", status: "blind", balance: -5, totalBetThisRound: 0 },
+          { id: 1, name: "B", status: "blind", balance: 5, totalBetThisRound: 0 },
+        ],
+        settlements: [],
+      },
+      state: { ...makeSession().state, history: [{ round: 1, winnerName: "B", handType: "Trail", pot: 10, players: 2 }] },
+    };
+    const { players, totalSessions } = computeAnalytics([first, second]);
+    expect(totalSessions).toBe(2);
+    expect(players).toHaveLength(2);
+    const a = players.find((p) => p.name === "a ")!; // most recent spelling wins
+    expect(a.sessions).toBe(2);
+    expect(a.totalEarnings).toBe(3 - 5);
+    expect(a.biggestSessionWin).toBe(3);
+    expect(a.biggestSessionLoss).toBe(-5);
+    expect(players.find((p) => p.name === "B")!.wins).toBe(1);
+  });
+});
+
+describe("filterByRange", () => {
+  it("keeps sessions ended within the window", () => {
+    const day = 24 * 60 * 60 * 1000;
+    const now = 100 * day;
+    const recent = { ...makeSession(), id: "r", endedAt: now - 2 * day };
+    const old = { ...makeSession(), id: "o", endedAt: now - 20 * day };
+    expect(filterByRange([recent, old], "7d", now).map((s) => s.id)).toEqual(["r"]);
+    expect(filterByRange([recent, old], "30d", now)).toHaveLength(2);
+    expect(filterByRange([recent, old], "all", now)).toHaveLength(2);
   });
 });
