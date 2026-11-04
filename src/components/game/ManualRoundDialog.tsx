@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Trophy, TrendingUp, Undo2, X, RotateCcw } from "lucide-react";
+import { Coins, Eraser, Repeat, Trophy, TrendingUp, Undo2, X, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,11 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   state: GameCore;
   starterName: string;
+  boot: number;
+  /** Bets from the previous iteration this round, by player id. */
+  lastBets: Record<number, number>;
   undoLabel?: string;
+  onFill: (bets: Record<number, number>) => void;
   onBetChange: (playerId: number, amount: number) => void;
   onToggleFold: (playerId: number) => void;
   onSubmit: () => void;
@@ -28,7 +32,10 @@ export const ManualRoundDialog = ({
   onOpenChange,
   state,
   starterName,
+  boot,
+  lastBets,
   undoLabel,
+  onFill,
   onBetChange,
   onToggleFold,
   onSubmit,
@@ -87,6 +94,41 @@ export const ManualRoundDialog = ({
               </div>
             </div>
 
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Quick fill">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                disabled={Object.keys(lastBets).length === 0}
+                onClick={() => onFill(lastBets)}
+                title="Fill every active player with their bet from the previous iteration"
+              >
+                <Repeat className="mr-1 h-3.5 w-3.5" /> Repeat last
+              </Button>
+              {boot > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={() => onFill(Object.fromEntries(active.map((p) => [p.id, boot])))}
+                >
+                  <Coins className="mr-1 h-3.5 w-3.5" /> All {formatMoney(boot)}
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs text-muted-foreground"
+                disabled={draft === 0}
+                onClick={() => onFill({})}
+              >
+                <Eraser className="mr-1 h-3.5 w-3.5" /> Clear
+              </Button>
+            </div>
+
             <div className="max-h-[45vh] space-y-2 overflow-y-auto pr-1">
               {players.map((player) => {
                 const isFolded = folded.has(player.id);
@@ -110,6 +152,7 @@ export const ManualRoundDialog = ({
                       </div>
                       <div className="text-[10px] text-muted-foreground">
                         In: {formatMoney(manual.cumulativeBets[player.id] ?? 0)}
+                        {lastBets[player.id] !== undefined && !isFolded && ` · last ${formatMoney(lastBets[player.id])}`}
                       </div>
                     </div>
                     {isFolded ? (

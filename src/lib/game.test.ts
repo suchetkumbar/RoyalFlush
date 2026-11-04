@@ -3,6 +3,7 @@ import {
   callAmount,
   canShow,
   createGame,
+  manualLastBets,
   manualSubmitError,
   raiseMin,
   reduceGame,
@@ -231,6 +232,20 @@ describe("manual mode", () => {
     expect(balances(discarded)).toEqual([-1, -1, -1]);
     expect(discarded.log.filter((l) => l.round === 1 && l.action === "manual")).toHaveLength(0);
     expect(play(MANUAL, discarded, { type: "UNDO" })).toEqual(mid);
+  });
+
+  it("remembers last iteration bets and fills drafts for players still in", () => {
+    let s = play(
+      MANUAL,
+      start(),
+      { type: "MANUAL_SET_BET", playerId: 0, amount: 4 },
+      { type: "MANUAL_SET_BET", playerId: 1, amount: 6 },
+      { type: "MANUAL_SUBMIT" }
+    );
+    expect(manualLastBets(s)).toEqual({ 0: 4, 1: 6 });
+    s = play(MANUAL, s, { type: "MANUAL_TOGGLE_FOLD", playerId: 1 }, { type: "MANUAL_FILL", bets: { 0: 4, 1: 6, 2: 2 } });
+    expect(s.manual.bets).toEqual({ 0: 4, 1: 0, 2: 2 }); // folded player stays at 0
+    expect(s.undo).toHaveLength(1); // drafting is not an undo step
   });
 
   it("ignores auto-mode actions", () => {

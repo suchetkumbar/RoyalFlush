@@ -61,6 +61,7 @@ export type GameAction = Stamp &
     | { type: "SHOW" }
     | { type: "AWARD"; winnerId: number; hand: HandType }
     | { type: "MANUAL_SET_BET"; playerId: number; amount: number }
+    | { type: "MANUAL_FILL"; bets: Record<number, number> }
     | { type: "MANUAL_TOGGLE_FOLD"; playerId: number }
     | { type: "MANUAL_SUBMIT" }
     | { type: "MANUAL_WINNER_STEP"; open: boolean }
@@ -212,6 +213,19 @@ export const manualDraftTotal = (s: GameCore): number => {
   return s.players.reduce((sum, p) => sum + (folded.has(p.id) ? 0 : s.manual.bets[p.id] ?? 0), 0);
 };
 
+/** Each player's committed bet in the previous iteration of the current round (for "repeat last"). */
+export const manualLastBets = (s: GameCore): Record<number, number> => {
+  const previous = `Iteration ${s.manual.iteration - 1}`;
+  const byName = new Map(s.players.map((p) => [p.name, p.id]));
+  const out: Record<number, number> = {};
+  for (const entry of s.log) {
+    if (entry.round !== s.round || entry.action !== "manual" || entry.note !== previous) continue;
+    const id = byName.get(entry.playerName);
+    if (id !== undefined) out[id] = entry.amount ?? 0;
+  }
+  return out;
+};
+
 // ---------- transitions ----------
 
 const applyBet = (s: GameCore, idx: number, amount: number): GameCore => ({
@@ -316,6 +330,16 @@ export function reduceGame(config: GameConfig, state: GameState, action: GameAct
       if (auto) return state;
       const amount = Math.max(0, Math.floor(Number(action.amount) || 0));
       return { ...state, manual: { ...s.manual, bets: { ...s.manual.bets, [action.playerId]: amount } } };
+    }
+    case "MANUAL_FILL": {
+      if (auto) return state;
+      const folded = new Set(s.manual.folded);
+      const bets = { ...s.manual.bets };
+      for (const p of s.players) {
+        if (folded.has(p.id)) continue;
+        bets[p.id] = Math.max(0, Math.floor(Number(action.bets[p.id]) || 0));
+      }
+      return { ...state, manual: { ...s.manual, bets } };
     }
     case "MANUAL_TOGGLE_FOLD": {
       if (auto) return state;

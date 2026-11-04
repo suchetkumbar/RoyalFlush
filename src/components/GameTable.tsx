@@ -7,6 +7,7 @@ import {
   canShow,
   currentPlayer,
   manualActivePlayers,
+  manualLastBets,
   manualSubmitError,
   raiseError,
   raiseMin,
@@ -216,7 +217,7 @@ export const GameTable = ({ names, boot, maxBet, mode, initialSession, onExit }:
         </div>
 
         <aside>
-          <HistoryPanel log={state.log} />
+          <HistoryPanel log={state.log} history={state.history} playerNames={names} />
         </aside>
       </div>
 
@@ -226,8 +227,10 @@ export const GameTable = ({ names, boot, maxBet, mode, initialSession, onExit }:
             open={raiseOpen}
             onOpenChange={setRaiseOpen}
             playerName={player.name}
+            seen={player.status === "seen"}
             min={raiseMin(config, state, player)}
             max={maxBet}
+            step={Math.max(1, boot)}
             onRaise={handleRaise}
           />
           <WinnerDialog
@@ -247,7 +250,10 @@ export const GameTable = ({ names, boot, maxBet, mode, initialSession, onExit }:
           onOpenChange={setManualOpen}
           state={state}
           starterName={starter?.name ?? "-"}
+          boot={boot}
+          lastBets={manualLastBets(state)}
           undoLabel={lastUndo?.label}
+          onFill={(bets) => dispatch({ type: "MANUAL_FILL", bets })}
           onBetChange={(playerId, amount) => dispatch({ type: "MANUAL_SET_BET", playerId, amount })}
           onToggleFold={(playerId) => dispatch({ type: "MANUAL_TOGGLE_FOLD", playerId })}
           onSubmit={handleManualSubmit}
