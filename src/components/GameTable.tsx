@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useGame, type SessionResult } from "@/hooks/useGame";
+import { useShortcuts } from "@/hooks/useShortcuts";
 import {
   activePlayers,
   callAmount,
@@ -26,6 +27,7 @@ import { GameHeader } from "./game/GameHeader";
 import { ManualRoundDialog } from "./game/ManualRoundDialog";
 import { ManualRoundPanel } from "./game/ManualRoundPanel";
 import { RaiseDialog } from "./game/RaiseDialog";
+import { ShortcutsDialog } from "./game/ShortcutsDialog";
 import { WinnerDialog } from "./game/WinnerDialog";
 
 interface Props {
@@ -47,6 +49,7 @@ export const GameTable = ({ names, boot, maxBet, mode, initialSession, onExit }:
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [result, setResult] = useState<SessionResult | null>(null);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   const auto = mode === "auto";
   const player = currentPlayer(state);
@@ -141,6 +144,26 @@ export const GameTable = ({ names, boot, maxBet, mode, initialSession, onExit }:
     setResult(endSession());
   };
 
+  const showAllowed = auto && canShow(config, state).ok;
+  useShortcuts(
+    {
+      "mod+z": handleUndo,
+      "?": () => setShortcutsOpen(true),
+      ...(auto && player
+        ? {
+            b: player.status === "blind" ? () => act({ type: "BLIND" }, `${player.name} played blind`) : undefined,
+            s: player.status === "blind" ? () => act({ type: "SEE" }, `${player.name} saw their cards`) : undefined,
+            c: player.status === "seen" ? () => act({ type: "CALL" }, `${player.name} called`) : undefined,
+            r: () => setRaiseOpen(true),
+            f: () => act({ type: "FOLD" }, `${player.name} folded`),
+            h: showAllowed ? handleShow : undefined,
+            d: () => setWinnerOpen(true),
+          }
+        : { n: () => setManualOpen(true) }),
+    },
+    result === null
+  );
+
   if (!player) return null;
 
   return (
@@ -153,7 +176,9 @@ export const GameTable = ({ names, boot, maxBet, mode, initialSession, onExit }:
         onUndo={handleUndo}
         onExport={() => setExportOpen(true)}
         onEnd={() => setConfirmEnd(true)}
+        onShortcuts={() => setShortcutsOpen(true)}
       />
+      <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} auto={auto} />
 
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 lg:grid-cols-[1fr,300px]">
         <div className="space-y-4">
@@ -193,7 +218,7 @@ export const GameTable = ({ names, boot, maxBet, mode, initialSession, onExit }:
               player={player}
               call={callAmount(config, state, player)}
               minRaise={raiseMin(config, state, player)}
-              showAllowed={canShow(config, state).ok}
+              showAllowed={showAllowed}
               onBlind={() => act({ type: "BLIND" }, `${player.name} played blind`)}
               onSee={() => act({ type: "SEE" }, `${player.name} saw their cards`)}
               onCall={() => act({ type: "CALL" }, `${player.name} called`)}

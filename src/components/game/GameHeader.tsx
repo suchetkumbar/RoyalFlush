@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Download, Flag, Info, Moon, MoreVertical, Smartphone, SunMedium, Undo2 } from "lucide-react";
+import { Check, Download, Flag, Info, Keyboard, Moon, MoreVertical, Smartphone, SunMedium, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,9 +21,10 @@ interface Props {
   onUndo: () => void;
   onExport: () => void;
   onEnd: () => void;
+  onShortcuts: () => void;
 }
 
-export const GameHeader = ({ subtitle, undoLabel, onUndo, onExport, onEnd }: Props) => {
+export const GameHeader = ({ subtitle, undoLabel, onUndo, onExport, onEnd, onShortcuts }: Props) => {
   const [infoOpen, setInfoOpen] = useState(false);
   const { isDark, toggle } = useThemeSwitch();
   const [keepAwake, setKeepAwakeState] = useState(getKeepAwake);
@@ -47,6 +48,7 @@ export const GameHeader = ({ subtitle, undoLabel, onUndo, onExport, onEnd }: Pro
           disabled={!undoLabel}
           title={undoLabel ? `Undo: ${undoLabel}` : "Nothing to undo"}
           aria-label={undoLabel ? `Undo ${undoLabel}` : "Nothing to undo"}
+          aria-keyshortcuts="Control+Z Meta+Z"
           className="h-10 max-w-[14rem]"
         >
           <Undo2 className="h-4 w-4 sm:mr-1" />
@@ -68,6 +70,10 @@ export const GameHeader = ({ subtitle, undoLabel, onUndo, onExport, onEnd }: Pro
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => setInfoOpen(true)}>
               <Info className="mr-2 h-4 w-4" /> How it works
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={onShortcuts} className="hidden sm:flex">
+              <Keyboard className="mr-2 h-4 w-4" /> Keyboard shortcuts
+              <DropdownMenuShortcut>?</DropdownMenuShortcut>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             {wakeLockSupported() && (

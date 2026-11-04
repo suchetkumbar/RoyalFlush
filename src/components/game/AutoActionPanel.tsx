@@ -42,31 +42,31 @@ export const AutoActionPanel = ({
     <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center">
       {player.status === "blind" && (
         <>
-          <Button onClick={onBlind} variant="secondary" className="h-12 w-full text-base sm:h-10 sm:w-auto sm:text-sm">
+          <Button onClick={onBlind} aria-keyshortcuts="B" title="Blind (B)" variant="secondary" className="h-12 w-full text-base sm:h-10 sm:w-auto sm:text-sm">
             <Hand className="mr-1 h-4 w-4" /> Blind {formatMoney(call)}
           </Button>
-          <Button onClick={onSee} className="h-12 w-full bg-seen text-base text-seen-foreground hover:bg-seen/85 sm:h-10 sm:w-auto sm:text-sm">
+          <Button onClick={onSee} aria-keyshortcuts="S" title="See (S)" className="h-12 w-full bg-seen text-base text-seen-foreground hover:bg-seen/85 sm:h-10 sm:w-auto sm:text-sm">
             <Eye className="mr-1 h-4 w-4" /> See
           </Button>
         </>
       )}
       {player.status === "seen" && (
-        <Button onClick={onCall} variant="secondary" className="h-12 w-full text-base sm:h-10 sm:w-auto sm:text-sm">
+        <Button onClick={onCall} aria-keyshortcuts="C" title="Call (C)" variant="secondary" className="h-12 w-full text-base sm:h-10 sm:w-auto sm:text-sm">
           <Phone className="mr-1 h-4 w-4" /> Call {formatMoney(call)}
         </Button>
       )}
-      <Button onClick={onRaise} className="h-12 w-full bg-gradient-brand text-base text-primary-foreground sm:h-10 sm:w-auto sm:text-sm">
+      <Button onClick={onRaise} aria-keyshortcuts="R" title="Raise (R)" className="h-12 w-full bg-gradient-brand text-base text-primary-foreground sm:h-10 sm:w-auto sm:text-sm">
         <TrendingUp className="mr-1 h-4 w-4" /> Raise
       </Button>
-      <Button onClick={onFold} variant="destructive" className="h-12 w-full text-base sm:h-10 sm:w-auto sm:text-sm">
+      <Button onClick={onFold} aria-keyshortcuts="F" title="Fold (F)" variant="destructive" className="h-12 w-full text-base sm:h-10 sm:w-auto sm:text-sm">
         <X className="mr-1 h-4 w-4" /> Fold
       </Button>
       {showAllowed && (
-        <Button onClick={onShow} className="h-12 w-full bg-accent text-base text-accent-foreground sm:h-10 sm:w-auto sm:text-sm">
+        <Button onClick={onShow} aria-keyshortcuts="H" title="Show (H)" className="h-12 w-full bg-accent text-base text-accent-foreground sm:h-10 sm:w-auto sm:text-sm">
           <Trophy className="mr-1 h-4 w-4" /> Show
         </Button>
       )}
-      <Button variant="outline" className="col-span-2 h-11 w-full sm:h-10 sm:w-auto" onClick={onDeclareWinner}>
+      <Button variant="outline" className="col-span-2 h-11 w-full sm:h-10 sm:w-auto" onClick={onDeclareWinner} aria-keyshortcuts="D" title="Declare winner (D)">
         <RefreshCw className="mr-1 h-4 w-4" /> Declare Winner
       </Button>
     </div>

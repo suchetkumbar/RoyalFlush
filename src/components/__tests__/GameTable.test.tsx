@@ -51,4 +51,25 @@ describe("GameTable", () => {
     expect(screen.queryByText("Game Over")).not.toBeInTheDocument();
     expect(screen.getByText("Current Turn")).toBeInTheDocument();
   });
+
+  it("keyboard shortcuts act for the current player and Ctrl+Z undoes", () => {
+    render(
+      <ThemeProvider attribute="class">
+        <GameTable names={["A", "B", "C"]} boot={1} maxBet={100} mode="auto" onExit={() => {}} />
+      </ThemeProvider>
+    );
+    const turn = () => screen.getByText("Current Turn").nextElementSibling?.textContent;
+    expect(turn()).toBe("A");
+    fireEvent.keyDown(window, { key: "b" });
+    expect(turn()).toBe("B");
+    fireEvent.keyDown(window, { key: "f" });
+    expect(turn()).toBe("C");
+    fireEvent.keyDown(window, { key: "z", ctrlKey: true });
+    expect(turn()).toBe("B");
+    fireEvent.keyDown(window, { key: "?" });
+    expect(screen.getByRole("dialog", { name: /keyboard shortcuts/i })).toBeInTheDocument();
+    // shortcuts are suspended while a dialog is open
+    fireEvent.keyDown(window, { key: "b" });
+    expect(turn()).toBe("B");
+  });
 });
