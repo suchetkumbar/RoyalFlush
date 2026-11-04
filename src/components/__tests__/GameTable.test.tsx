@@ -36,4 +36,19 @@ describe("GameTable", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: /cancel/i }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
+
+  it("ending the game shows settlement, and Back to game returns to the table", async () => {
+    render(
+      <ThemeProvider attribute="class">
+        <GameTable names={["A", "B", "C"]} boot={1} maxBet={100} mode="auto" onExit={() => {}} />
+      </ThemeProvider>
+    );
+    fireEvent.click(screen.getByRole("button", { name: /end game/i }));
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: /end & settle/i }));
+    expect(await screen.findByText("Game Over")).toBeInTheDocument();
+    expect(screen.getByText(/everyone is even/i)).toBeInTheDocument(); // round 1 boots refunded
+    fireEvent.click(screen.getByRole("button", { name: /back to game/i }));
+    expect(screen.queryByText("Game Over")).not.toBeInTheDocument();
+    expect(screen.getByText("Current Turn")).toBeInTheDocument();
+  });
 });

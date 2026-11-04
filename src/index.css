@@ -56,6 +56,17 @@ All colors MUST be HSL.
     --shadow-soft: 0 4px 16px -4px hsl(30 30% 25% / 0.15);
     --shadow-glow: 0 0 24px hsl(var(--brand) / 0.25);
 
+    /* Chart categorical slots (validated: CVD-safe adjacent order, light surface #fff). Fixed order, never cycled. */
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    --series-3: #1baf7a;
+    --series-4: #eda100;
+    --series-5: #e87ba4;
+    --series-6: #008300;
+    --series-7: #6250d6;
+    --series-8: #e34948;
+    --chart-grid: #e7e3dc;
+
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
@@ -116,6 +127,17 @@ All colors MUST be HSL.
     --gradient-card: linear-gradient(180deg, hsl(230 22% 16%) 0%, hsl(230 22% 13%) 100%);
     --shadow-soft: 0 4px 16px -4px hsl(230 50% 4% / 0.5);
     --shadow-glow: 0 0 24px hsl(var(--brand) / 0.35);
+
+    /* Chart categorical slots, dark steps (validated on #1c1e2b, all >= 3:1). */
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #008300;
+    --series-7: #9085e9;
+    --series-8: #e66767;
+    --chart-grid: #2a2d3d;
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;

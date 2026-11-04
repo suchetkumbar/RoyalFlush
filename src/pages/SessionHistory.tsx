@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/game/ConfirmDialog";
 import {
+  archiveStoredSession,
   clearStoredSessionHistory,
   deleteStoredSession,
+  loadStoredSession,
   loadStoredSessionHistory,
   saveStoredSession,
   type StoredSession,
@@ -33,8 +35,14 @@ export const SessionHistory = () => {
   }, []);
 
   const handleResume = async (session: StoredSession) => {
-    await saveStoredSession(session);
-    navigate("/");
+    // Park whatever game is currently active so resuming never overwrites it.
+    const current = await loadStoredSession();
+    if (current && current.id !== session.id) {
+      await archiveStoredSession({ ...current, status: "active", updatedAt: Date.now() });
+    }
+    await saveStoredSession({ ...session, status: "active" });
+    await deleteStoredSession(session.id); // it lives in the active slot while being played
+    navigate("/", { state: { autoResume: true } });
   };
 
   const handleDelete = async (id: string) => {
@@ -48,7 +56,7 @@ export const SessionHistory = () => {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold">Saved Sessions</h1>
-            <p className="text-sm text-muted-foreground">Results of your finished sessions.</p>
+            <p className="text-sm text-muted-foreground">Finished results and games you parked to resume later.</p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="rounded-full bg-muted px-3 py-1 text-sm text-foreground/80">

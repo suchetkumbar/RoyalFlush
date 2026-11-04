@@ -37,7 +37,7 @@ interface Props {
 }
 
 export const GameTable = ({ names, boot, maxBet, mode, initialSession, onExit }: Props) => {
-  const { config, state, dispatch, session, endSession } = useGame({ names, boot, maxBet, mode, initialSession });
+  const { config, state, dispatch, session, endSession, resumeSession } = useGame({ names, boot, maxBet, mode, initialSession });
 
   const [raiseOpen, setRaiseOpen] = useState(false);
   const [winnerOpen, setWinnerOpen] = useState(false);
@@ -279,11 +279,12 @@ export const GameTable = ({ names, boot, maxBet, mode, initialSession, onExit }:
       <ExportDialog open={exportOpen} session={session} onOpenChange={setExportOpen} />
 
       <SettlementDialog
-        open={result !== null}
-        players={result?.players ?? []}
-        settlements={result?.settlements ?? []}
-        stats={result?.stats ?? []}
+        result={result}
         onNewSession={onExit}
+        onBackToGame={() => {
+          setResult(null);
+          void resumeSession().then(() => toast("Back in the game"));
+        }}
       />
     </div>
   );

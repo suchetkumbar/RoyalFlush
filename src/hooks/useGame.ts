@@ -3,12 +3,15 @@ import { createGame, reduceGame, type GameAction, type GameConfig, type GameStat
 import {
   archiveStoredSession,
   clearStoredSession,
+  deleteStoredSession,
   saveStoredSession,
   type StoredSession,
 } from "@/lib/storage";
 import {
   computeStats,
   prepareSessionClose,
+  type ActionLog,
+  type RoundRecord,
   settle,
   type GameMode,
   type Player,
@@ -30,6 +33,10 @@ export interface SessionResult {
   players: Player[];
   settlements: Settlement[];
   stats: PlayerStats[];
+  /** Log of completed rounds only (unfinished round dropped). */
+  log: ActionLog[];
+  history: RoundRecord[];
+  endedAt: number;
 }
 
 const newId = () =>
@@ -68,6 +75,8 @@ export function useGame({ names, boot, maxBet, mode, initialSession }: Options) 
   const pending = useRef<StoredSession | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ended = useRef(false);
+  /** Pending archive/clear from endSession, so resumeSession can run after it. */
+  const endWrite = useRef<Promise<void>>(Promise.resolve());
 
   const flush = useCallback(() => {
     if (timer.current) clearTimeout(timer.current);
@@ -107,7 +116,7 @@ export function useGame({ names, boot, maxBet, mode, initialSession }: Options) 
     pending.current = null;
 
     const now = Date.now();
-    void archiveStoredSession({
+    endWrite.current = archiveStoredSession({
       ...session,
       status: "completed",
       updatedAt: now,
@@ -116,8 +125,16 @@ export function useGame({ names, boot, maxBet, mode, initialSession }: Options) 
       final: { players: closed.players, settlements },
     }).then(() => clearStoredSession());
 
-    return { players: closed.players, settlements, stats };
+    return { players: closed.players, settlements, stats, log: closed.log, history: state.history, endedAt: now };
   }, [session, state]);
 
-  return { config, state, dispatch, session, endSession };
+  /** Undo an End: drop the archived copy and make this the active game again. */
+  const resumeSession = useCallback(async () => {
+    await endWrite.current;
+    ended.current = false;
+    await deleteStoredSession(session.id);
+    await saveStoredSession({ ...session, updatedAt: Date.now() });
+  }, [session]);
+
+  return { config, state, dispatch, session, endSession, resumeSession };
 }

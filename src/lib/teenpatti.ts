@@ -261,3 +261,28 @@ export function computeStats(
     };
   });
 }
+
+const STAKE_ACTIONS: ReadonlySet<ActionType> = new Set(["boot", "blind", "call", "raise", "show", "manual"]);
+
+export type TimelinePoint = { round: number } & Record<string, number>;
+
+/**
+ * Cumulative net balance per player after each round, derived from the action log.
+ * Starts with a round-0 point where everyone is at 0. Pass a log that only contains
+ * completed rounds (see prepareSessionClose) for the final row to equal the settled balances.
+ */
+export function balanceTimeline(players: Player[], log: ActionLog[]): TimelinePoint[] {
+  const running: Record<string, number> = Object.fromEntries(players.map((p) => [p.name, 0]));
+  const rounds = Array.from(new Set(log.map((l) => l.round))).sort((a, b) => a - b);
+  const points: TimelinePoint[] = [{ round: 0, ...running } as TimelinePoint];
+  for (const round of rounds) {
+    for (const entry of log) {
+      if (entry.round !== round || !(entry.playerName in running)) continue;
+      const amount = entry.amount ?? 0;
+      if (entry.action === "win") running[entry.playerName] += amount;
+      else if (STAKE_ACTIONS.has(entry.action)) running[entry.playerName] -= amount;
+    }
+    points.push({ round, ...running } as TimelinePoint);
+  }
+  return points;
+}

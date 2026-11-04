@@ -13,7 +13,7 @@ export const Analytics = () => {
 
   useEffect(() => {
     const loadAnalytics = async () => {
-      const sessions = await loadStoredSessionHistory();
+      const sessions = (await loadStoredSessionHistory()).filter((s) => s.status === "completed");
       if (sessions.length > 0) {
         setAnalytics(computeAnalytics(sessions));
       }

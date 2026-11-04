@@ -1,4 +1,4 @@
-import { ActionLog, Player } from "./teenpatti";
+import { ActionLog, Player, Settlement } from "./teenpatti";
 import type { StoredSession } from "./storage";
 
 const escapeCsv = (value: unknown) => {
@@ -67,4 +67,31 @@ export const downloadPlayersCsv = (players: Player[]) => {
 
 export const copySessionJson = async (session: StoredSession) => {
   await navigator.clipboard.writeText(getSessionJson(session));
+};
+
+const money = (n: number) => `${n < 0 ? "-" : ""}₹${Math.abs(n).toLocaleString("en-IN")}`;
+
+/** Plain-text summary for WhatsApp/SMS: standings plus who pays whom. */
+export const getSettlementText = (
+  players: Player[],
+  settlements: Settlement[],
+  rounds: number,
+  date: Date = new Date()
+): string => {
+  const day = date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  const standings = [...players]
+    .sort((a, b) => b.balance - a.balance)
+    .map((p) => `  ${p.name}: ${p.balance > 0 ? "+" : ""}${money(p.balance)}`);
+  const payments = settlements.length
+    ? settlements.map((s) => `  ${s.from} → ${s.to}: ${money(s.amount)}`)
+    : ["  Everyone is even."];
+  return [
+    `RoyalFlush · ${day} · ${rounds} round${rounds === 1 ? "" : "s"}`,
+    "",
+    "Standings",
+    ...standings,
+    "",
+    "Settle up",
+    ...payments,
+  ].join("\n");
 };
