@@ -48,3 +48,8 @@ export function loadSetupPrefs(): SetupPrefs | null {
 }
 
 export const saveSetupPrefs = (prefs: SetupPrefs) => safeSet(SETUP_KEY, JSON.stringify(prefs));
+
+const WAKE_KEY = "royalflush-keep-awake";
+/** Keep the screen on during a game (default on). */
+export const getKeepAwake = () => safeGet(WAKE_KEY) !== "0";
+export const setKeepAwake = (on: boolean) => safeSet(WAKE_KEY, on ? "1" : "0");

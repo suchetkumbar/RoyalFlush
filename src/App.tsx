@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { PwaUpdater } from "@/components/PwaUpdater";
 import { ThemeShortcut } from "@/components/ThemeToggle";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,6 +24,7 @@ const App = () => (
     <ThemeShortcut />
     <TooltipProvider>
       <Sonner />
+      <PwaUpdater />
       <ErrorBoundary>
         <BrowserRouter>
           <Suspense fallback={<PageFallback />}>

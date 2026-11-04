@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, Flag, Info, Moon, MoreVertical, SunMedium, Undo2 } from "lucide-react";
+import { Check, Download, Flag, Info, Moon, MoreVertical, Smartphone, SunMedium, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,6 +12,8 @@ import {
 import { InfoModal } from "../InfoModal";
 import { Logo } from "../Logo";
 import { THEME_SHORTCUT_LABEL, useThemeSwitch } from "@/hooks/useThemeSwitch";
+import { useWakeLock, wakeLockSupported } from "@/hooks/useWakeLock";
+import { getKeepAwake, setKeepAwake } from "@/lib/prefs";
 
 interface Props {
   subtitle: string;
@@ -24,6 +26,8 @@ interface Props {
 export const GameHeader = ({ subtitle, undoLabel, onUndo, onExport, onEnd }: Props) => {
   const [infoOpen, setInfoOpen] = useState(false);
   const { isDark, toggle } = useThemeSwitch();
+  const [keepAwake, setKeepAwakeState] = useState(getKeepAwake);
+  const awake = useWakeLock(keepAwake);
 
   return (
     <header className="mx-auto mb-4 flex max-w-7xl items-center justify-between gap-3">
@@ -66,6 +70,18 @@ export const GameHeader = ({ subtitle, undoLabel, onUndo, onExport, onEnd }: Pro
               <Info className="mr-2 h-4 w-4" /> How it works
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            {wakeLockSupported() && (
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  setKeepAwake(!keepAwake);
+                  setKeepAwakeState(!keepAwake);
+                }}
+              >
+                <Smartphone className="mr-2 h-4 w-4" /> Keep screen on
+                {keepAwake && <Check className="ml-auto h-4 w-4" aria-label={awake ? "on" : "requested"} />}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onSelect={toggle}>
               {isDark ? <SunMedium className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
               {isDark ? "Light theme" : "Dark theme"}
