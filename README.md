@@ -38,7 +38,7 @@ vite-plugin-pwa · Vitest + Testing Library
 
 ## Getting started
 
-Requires **Node.js 20 or newer** (CI uses Node 22) and npm.
+Requires **Node.js 22 or 24** (CI uses 22; Vercel builds with 24) and npm.
 
 ```bash
 npm install
