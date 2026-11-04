@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { Calculator, ClipboardPen, Flag, Undo2 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { useGame, type SessionResult } from "@/hooks/useGame";
 import {
   activePlayers,
@@ -19,12 +17,11 @@ import { getRoundStarterIndex, type GameMode, type HandType } from "@/lib/teenpa
 import { formatMoney } from "@/lib/utils";
 import { ExportDialog } from "./ExportDialog";
 import { HistoryPanel } from "./HistoryPanel";
-import { InfoModal } from "./InfoModal";
 import { PlayerCard } from "./PlayerCard";
 import { SettlementDialog } from "./SettlementDialog";
-import { ThemeToggle } from "./ThemeToggle";
 import { AutoActionPanel } from "./game/AutoActionPanel";
 import { ConfirmDialog } from "./game/ConfirmDialog";
+import { GameHeader } from "./game/GameHeader";
 import { ManualRoundDialog } from "./game/ManualRoundDialog";
 import { ManualRoundPanel } from "./game/ManualRoundPanel";
 import { RaiseDialog } from "./game/RaiseDialog";
@@ -53,7 +50,10 @@ export const GameTable = ({ names, boot, maxBet, mode, initialSession, onExit }:
   const auto = mode === "auto";
   const player = currentPlayer(state);
   const active = activePlayers(state);
-  const starter = state.players[getRoundStarterIndex(state.round, state.players.length)];
+  const starterIdx = getRoundStarterIndex(state.round, state.players.length);
+  const starter = state.players[starterIdx];
+  // Seat order for this round: starter first, then clockwise (matches turn order at the table).
+  const seated = [...state.players.slice(starterIdx), ...state.players.slice(0, starterIdx)];
   const lastUndo = state.undo[state.undo.length - 1];
 
   // Manual mode: open the entry dialog at the start of every round.
@@ -143,48 +143,16 @@ export const GameTable = ({ names, boot, maxBet, mode, initialSession, onExit }:
   if (!player) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-bg p-3 sm:p-4">
-      <header className="mx-auto mb-4 flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-brand">
-            <Calculator className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold">RoyalFlush</h1>
-            <p className="text-xs text-muted-foreground">
-              Round {state.round} ·{" "}
-              {auto
-                ? `Auto · Boot ${formatMoney(boot)} · Max ${formatMoney(maxBet)}`
-                : `Manual · Starter ${starter?.name ?? "-"}`}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleUndo}
-              disabled={!lastUndo}
-              title={lastUndo ? `Undo: ${lastUndo.label}` : "Nothing to undo"}
-              className="w-full min-w-[9rem] sm:w-auto"
-            >
-              <Undo2 className="mr-1 h-4 w-4" /> Undo
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setExportOpen(true)} className="w-full min-w-[9rem] sm:w-auto">
-              <ClipboardPen className="mr-1 h-4 w-4" /> Export
-            </Button>
-            <Button variant="destructive" size="sm" onClick={() => setConfirmEnd(true)} className="w-full min-w-[9rem] sm:w-auto">
-              <Flag className="mr-1 h-4 w-4" /> End Game
-            </Button>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <InfoModal />
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-bg p-3 pb-6 sm:p-4">
+      <GameHeader
+        subtitle={`Round ${state.round} · ${
+          auto ? `Auto · Boot ${formatMoney(boot)} · Max ${formatMoney(maxBet)}` : `Manual · Starter ${starter?.name ?? "-"}`
+        }`}
+        undoLabel={lastUndo?.label}
+        onUndo={handleUndo}
+        onExport={() => setExportOpen(true)}
+        onEnd={() => setConfirmEnd(true)}
+      />
 
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 lg:grid-cols-[1fr,300px]">
         <div className="space-y-4">
@@ -208,8 +176,14 @@ export const GameTable = ({ names, boot, maxBet, mode, initialSession, onExit }:
           </div>
 
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-            {state.players.map((p, index) => (
-              <PlayerCard key={p.id} player={p} isCurrent={auto && index === state.turnIdx} />
+            {seated.map((p) => (
+              <PlayerCard
+                key={p.id}
+                player={p}
+                isCurrent={auto && p.id === state.players[state.turnIdx]?.id}
+                isStarter={p.id === starter?.id}
+                showStatus={auto}
+              />
             ))}
           </div>
 

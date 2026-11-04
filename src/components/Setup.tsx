@@ -133,7 +133,7 @@ export const Setup = ({ onStart }: Props) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="boot">Boot Amount (Rs)</Label>
+          <Label htmlFor="boot">Boot Amount (₹)</Label>
           <Input
             id="boot"
             type="number"
@@ -151,7 +151,7 @@ export const Setup = ({ onStart }: Props) => {
 
         {mode === "auto" && (
           <div className="space-y-2">
-            <Label htmlFor="maxbet">Max Bet per Turn (Rs)</Label>
+            <Label htmlFor="maxbet">Max Bet per Turn (₹)</Label>
             <Input
               id="maxbet"
               type="number"

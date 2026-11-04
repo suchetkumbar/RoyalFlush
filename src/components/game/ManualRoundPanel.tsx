@@ -73,7 +73,7 @@ export const ManualRoundPanel = ({
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold text-brand">R{r.round}</span>
-                <Trophy className="h-3 w-3 text-yellow-500" />
+                <Trophy className="h-3 w-3 text-warn" />
                 <span className="truncate font-medium">{r.winnerName}</span>
               </div>
               <div className="mt-0.5 text-[10px] text-muted-foreground">
