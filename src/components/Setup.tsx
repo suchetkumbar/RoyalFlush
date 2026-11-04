@@ -26,9 +26,12 @@ const setupSchema = z.object({
   count: z.number().int().min(MIN_PLAYERS).max(MAX_PLAYERS),
   boot: z.number().int().min(0).max(10000),
   maxBet: z.number().int().min(1).max(100000),
-  names: z.array(
-    z.string().trim().min(1, "Name required").max(15, "Max 15 chars")
-  ),
+  names: z
+    .array(z.string().trim().min(1, "Name required").max(15, "Max 15 chars"))
+    .refine(
+      (list) => new Set(list.map((n) => n.toLowerCase())).size === list.length,
+      "Player names must be unique"
+    ),
 });
 
 export const Setup = ({ onStart }: Props) => {
@@ -49,6 +52,12 @@ export const Setup = ({ onStart }: Props) => {
 
   const updateName = (i: number, v: string) =>
     setNames((prev) => prev.map((p, idx) => (idx === i ? v : p)));
+
+  const duplicateNames = new Set(
+    names
+      .map((n) => n.trim().toLowerCase())
+      .filter((n, i, all) => n && all.indexOf(n) !== i)
+  );
 
   const handle = () => {
     const cleaned = names.map((n, i) => n.trim() || `Player ${i + 1}`);
@@ -165,7 +174,12 @@ export const Setup = ({ onStart }: Props) => {
                 value={name}
                 onChange={(e) => updateName(i, e.target.value)}
                 maxLength={15}
+                aria-invalid={duplicateNames.has(name.trim().toLowerCase())}
+                className={duplicateNames.has(name.trim().toLowerCase()) ? "border-destructive" : undefined}
               />
+              {duplicateNames.has(name.trim().toLowerCase()) && (
+                <p className="text-xs text-destructive">Duplicate name</p>
+              )}
             </div>
           ))}
         </div>

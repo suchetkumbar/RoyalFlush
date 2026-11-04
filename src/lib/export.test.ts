@@ -39,7 +39,7 @@ describe("export utilities", () => {
   it("serializes session JSON with readable formatting", () => {
     const json = getSessionJson(session);
     expect(json).toContain(`"id": "test-123"`);
-    expect(json).toContain(`"names": [\n    \"Alice\",\n    \"Bob\"\n  ]`);
+    expect(json).toContain(`"names": [\n    "Alice",\n    "Bob"\n  ]`);
   });
 
   it("generates action log CSV with headers and rows", () => {

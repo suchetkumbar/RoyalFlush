@@ -92,6 +92,10 @@ export const GameTable = ({
   onExit,
 }: Props) => {
   const initialState = initialSession?.state;
+  const [sessionId] = useState(
+    () => initialSession?.id ?? crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
+  const [createdAt] = useState(() => initialSession?.createdAt ?? Date.now());
 
   const [players, setPlayers] = useState<Player[]>(() => initialState?.players ?? []);
   const [pot, setPot] = useState(() => initialState?.pot ?? 0);
@@ -139,6 +143,7 @@ export const GameTable = ({
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [isEndingRound, setIsEndingRound] = useState(false);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
 
   const snapshot = (label: string) => {
     setSnapshots((s) => [
@@ -258,15 +263,15 @@ export const GameTable = ({
   const activePlayers = players.filter((player) => player.status !== "folded");
   const currentPlayer = players[turnIdx];
 
-  const persistentSession = useMemo(() => {
+  const persistentSession = useMemo<StoredSession>(() => {
     return {
-      id: initialSession?.id ?? crypto.randomUUID?.() ?? `${Date.now()}`,
+      id: sessionId,
       version: 1,
       names,
       boot,
       maxBet,
       mode,
-      createdAt: initialSession?.createdAt ?? Date.now(),
+      createdAt,
       updatedAt: Date.now(),
       state: {
         players,
@@ -304,8 +309,8 @@ export const GameTable = ({
     manualCumulativeBets,
     manualRoundPot,
     manualWinnerStep,
-    initialSession?.createdAt,
-    initialSession?.id,
+    createdAt,
+    sessionId,
   ]);
 
   useEffect(() => {
@@ -618,15 +623,18 @@ export const GameTable = ({
     setManualRoundPot(newPot);
     setPot(newPot);
 
-    // Update player cards to reflect cumulative bets & fold status
-    setPlayers((prev) =>
-      prev.map((player) => ({
+    // Update player cards to reflect cumulative bets & fold status.
+    // Computed eagerly so an immediate auto-award sees the deducted balances.
+    const playersAfterIteration = players.map((player) => {
+      const bet = manualFolded.has(player.id) ? 0 : manualBets[player.id] || 0;
+      return {
         ...player,
         totalBetThisRound: newCumulative[player.id] || 0,
-        balance: player.balance - (manualBets[player.id] || 0),
-        status: manualFolded.has(player.id) ? "folded" as const : "blind" as const,
-      }))
-    );
+        balance: player.balance - bet,
+        status: manualFolded.has(player.id) ? ("folded" as const) : ("blind" as const),
+      };
+    });
+    setPlayers(playersAfterIteration);
 
     // Log the iteration bets
     const ts = Date.now();
@@ -681,14 +689,10 @@ export const GameTable = ({
     if (activeCount <= 1) {
       const lastPlayer = players.find((p) => !manualFolded.has(p.id));
       if (lastPlayer) {
-        // Pass data explicitly to avoid stale closure issues
-        const finalPot = newPot;
-        const finalBets = newCumulative;
+        // Pass post-iteration data explicitly to avoid stale closure issues
         setSelectedWinner(lastPlayer.name);
         setSelectedHand("Unknown");
-        setTimeout(() => {
-          confirmManualRound(lastPlayer.name, "Unknown", finalPot, finalBets);
-        }, 150);
+        confirmManualRound(lastPlayer.name, "Unknown", newPot, newCumulative, playersAfterIteration);
       }
     }
   };
@@ -703,7 +707,8 @@ export const GameTable = ({
     explicitWinner?: string,
     explicitHand?: HandType,
     explicitPot?: number,
-    explicitBets?: Record<number, number>
+    explicitBets?: Record<number, number>,
+    explicitPlayers?: Player[]
   ) => {
     if (mode !== "manual" || isEndingRound) return;
     const winnerName = explicitWinner || selectedWinner;
@@ -727,7 +732,8 @@ export const GameTable = ({
     snapshot(`Manual round ${round}`);
 
     // Apply final balances: winner gains pot, bets already deducted during iterations
-    const updatedPlayers = players.map((player) => {
+    const basePlayers = explicitPlayers ?? players;
+    const updatedPlayers = basePlayers.map((player) => {
       const winnings = player.id === winner.id ? totalPot : 0;
       return {
         ...player,
@@ -820,7 +826,16 @@ export const GameTable = ({
     setFinalStats(computeStats(closedSession.players, closedSession.log, history));
     setEndDialog(true);
     setConfirmEnd(false);
-    void archiveStoredSession(persistentSession);
+    void archiveStoredSession({
+      ...persistentSession,
+      updatedAt: Date.now(),
+      state: {
+        ...persistentSession.state,
+        players: closedSession.players,
+        log: closedSession.log,
+        pot: 0,
+      },
+    });
   };
 
   if (!currentPlayer) return null;
@@ -971,8 +986,9 @@ export const GameTable = ({
                       variant="ghost"
                       size="sm"
                       className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                      onClick={discardCurrentRound}
+                      onClick={() => setConfirmDiscard(true)}
                       title="Discard this round and restart"
+                      aria-label="Discard this round and restart"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -1059,7 +1075,13 @@ export const GameTable = ({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={winnerDialog} onOpenChange={() => {}}>
+      <Dialog
+        open={winnerDialog}
+        onOpenChange={(open) => {
+          // Only forced open when a single player remains; otherwise allow cancel (Undo a Show afterwards if needed)
+          if (!open && activePlayers.length > 1) setWinnerDialog(false);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="text-brand">Round Winner</DialogTitle>
@@ -1101,14 +1123,21 @@ export const GameTable = ({
             <div className="text-center text-sm text-muted-foreground">
               Pot: <span className="font-bold text-brand">{currency(pot)}</span>
             </div>
-            <Button
-              onClick={confirmWinner}
-              size="lg"
-              disabled={isEndingRound}
-              className="w-full bg-gradient-brand font-bold text-primary-foreground"
-            >
-              Award Pot & Next Round
-            </Button>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              {activePlayers.length > 1 && (
+                <Button variant="outline" onClick={() => setWinnerDialog(false)} className="flex-1">
+                  Cancel
+                </Button>
+              )}
+              <Button
+                onClick={confirmWinner}
+                size="lg"
+                disabled={isEndingRound}
+                className="flex-1 bg-gradient-brand font-bold text-primary-foreground"
+              >
+                Award Pot & Next Round
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -1330,6 +1359,32 @@ export const GameTable = ({
             </Button>
             <Button onClick={handleEndGame} className="flex-1 bg-gradient-brand text-primary-foreground">
               End & Settle
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={confirmDiscard} onOpenChange={setConfirmDiscard}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Discard round {round}?</DialogTitle>
+            <DialogDescription>
+              All bets entered this round are refunded and the round restarts from the boot. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button variant="outline" onClick={() => setConfirmDiscard(false)} className="flex-1">
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setConfirmDiscard(false);
+                discardCurrentRound();
+              }}
+              className="flex-1"
+            >
+              Discard Round
             </Button>
           </div>
         </DialogContent>

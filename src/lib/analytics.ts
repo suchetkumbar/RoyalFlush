@@ -1,4 +1,4 @@
-import type { StoredSession, RoundRecord, ActionLog, Player } from "@/lib/teenpatti";
+import type { StoredSession } from "@/lib/storage";
 
 export interface PlayerStats {
   name: string;
@@ -30,8 +30,8 @@ const getSessionWinnings = (session: StoredSession, playerName: string): number 
 const getSessionBets = (session: StoredSession, playerName: string): number => {
   const betEntries = session.state.log.filter(
     (entry) =>
-      (entry.action === "boot" || entry.action === "blind" || entry.action === "see" ||
-        entry.action === "call" || entry.action === "raise" || entry.action === "manual") &&
+      (entry.action === "boot" || entry.action === "blind" || entry.action === "call" ||
+        entry.action === "raise" || entry.action === "show" || entry.action === "manual") &&
       entry.playerName === playerName
   );
   return betEntries.reduce((sum, entry) => sum + (entry.amount ?? 0), 0);
@@ -41,6 +41,7 @@ export const computeAnalytics = (sessions: StoredSession[]): SessionAnalytics =>
   const playerMap = new Map<string, PlayerStats>();
   let totalRounds = 0;
   const handDistribution: Record<string, number> = {};
+  const potsWon = new Map<string, number>();
 
   sessions.forEach((session) => {
     totalRounds += session.state.history.length;
@@ -75,6 +76,7 @@ export const computeAnalytics = (sessions: StoredSession[]): SessionAnalytics =>
       const stats = playerMap.get(round.winnerName);
       if (stats) {
         stats.wins += 1;
+        potsWon.set(round.winnerName, (potsWon.get(round.winnerName) ?? 0) + round.pot);
       }
 
       // Track hand ranking distribution
@@ -98,7 +100,7 @@ export const computeAnalytics = (sessions: StoredSession[]): SessionAnalytics =>
   // Calculate win rates and avg win amounts
   playerMap.forEach((stats) => {
     stats.winRate = stats.roundsPlayed > 0 ? (stats.wins / stats.roundsPlayed) * 100 : 0;
-    stats.avgWinAmount = stats.wins > 0 ? Math.round(stats.totalEarnings / stats.wins) : 0;
+    stats.avgWinAmount = stats.wins > 0 ? Math.round((potsWon.get(stats.name) ?? 0) / stats.wins) : 0;
   });
 
   const players = Array.from(playerMap.values()).sort((a, b) => b.totalEarnings - a.totalEarnings);

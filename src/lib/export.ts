@@ -26,7 +26,7 @@ export const downloadSessionJson = (session: StoredSession) => {
 };
 
 export const getActionLogCsv = (log: ActionLog[]) => {
-  const rows = [["Round", "Player", "Action", "Amount", "Note", "Timestamp"]];
+  const rows: (string | number)[][] = [["Round", "Player", "Action", "Amount", "Note", "Timestamp"]];
   return rows
     .concat(
       log.map((entry) => [
@@ -47,7 +47,7 @@ export const downloadActionLogCsv = (log: ActionLog[]) => {
 };
 
 export const getPlayersCsv = (players: Player[]) => {
-  const rows = [["Name", "Balance", "Status", "Total Bet This Round"]];
+  const rows: (string | number)[][] = [["Name", "Balance", "Status", "Total Bet This Round"]];
   return rows
     .concat(
       players.map((player) => [

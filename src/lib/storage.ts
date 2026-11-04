@@ -146,7 +146,7 @@ export async function saveStoredSession(session: StoredSession) {
   }
 
   try {
-    await withObjectStore<void>(ACTIVE_STORE, "readwrite", (store) =>
+    await withObjectStore<IDBValidKey>(ACTIVE_STORE, "readwrite", (store) =>
       store.put({ key: "active", value: session })
     );
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
@@ -226,7 +226,7 @@ export async function archiveStoredSession(session: StoredSession) {
   }
 
   try {
-    await withObjectStore<void>(HISTORY_STORE, "readwrite", (store) => store.put(session));
+    await withObjectStore<IDBValidKey>(HISTORY_STORE, "readwrite", (store) => store.put(session));
   } catch (error) {
     console.warn("Failed to archive session to IndexedDB", error);
   }
