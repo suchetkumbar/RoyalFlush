@@ -31,7 +31,7 @@ export const SessionHistory = () => {
   const handleImport = async (file: File | undefined) => {
     if (!file) return;
     const result = parseSessionImport(await file.text());
-    if (result.ok === false) {
+    if (!result.ok) {
       toast.error(result.error);
       return;
     }
