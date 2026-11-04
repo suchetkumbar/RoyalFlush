@@ -19,7 +19,7 @@ interface Props {
   onNewSession: () => void;
 }
 
-const currency = (amount: number) => `Rs${amount}`;
+import { formatMoney as currency, formatSignedMoney } from "@/lib/utils";
 
 const StatRow = ({ label, value }: { label: string; value: string | number }) => (
   <div className="flex items-start justify-between gap-3 border-b border-border/40 py-1 text-xs last:border-0">
@@ -94,8 +94,7 @@ export const SettlementDialog = ({
                                 : "text-muted-foreground"
                           }
                         >
-                          {p.balance >= 0 ? "+" : ""}
-                          {currency(p.balance)}
+                          {formatSignedMoney(p.balance)}
                         </span>
                       </li>
                     ))}
@@ -149,8 +148,7 @@ export const SettlementDialog = ({
                               : "text-muted-foreground"
                         }
                       >
-                        {s.net >= 0 ? "+" : ""}
-                        {currency(s.net)}
+                        {formatSignedMoney(s.net)}
                       </span>
                     </div>
                     <StatRow label="Rounds Played" value={s.roundsPlayed} />

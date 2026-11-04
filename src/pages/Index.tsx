@@ -5,10 +5,10 @@ import { GameTable } from "@/components/GameTable";
 import { GameMode } from "@/lib/teenpatti";
 import { clearStoredSession, loadStoredSession, type StoredSession } from "@/lib/storage";
 
-type Stage = "disclaimer" | "setup" | "game";
+type Stage = "loading" | "disclaimer" | "setup" | "game";
 
 const Index = () => {
-  const [stage, setStage] = useState<Stage>("disclaimer");
+  const [stage, setStage] = useState<Stage>("loading");
   const [names, setNames] = useState<string[]>([]);
   const [boot, setBoot] = useState(1);
   const [maxBet, setMaxBet] = useState(100);
@@ -25,6 +25,8 @@ const Index = () => {
         setMode(session.mode);
         setLoadedSession(session);
         setStage("game");
+      } else {
+        setStage("disclaimer");
       }
     };
 
@@ -46,6 +48,12 @@ const Index = () => {
     setStage("setup");
   };
 
+  if (stage === "loading")
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-bg text-sm text-muted-foreground" role="status">
+        Loading…
+      </div>
+    );
   if (stage === "disclaimer") return <Disclaimer onStart={() => setStage("setup")} />;
   if (stage === "setup")
     return <Setup onStart={handleStart} />;

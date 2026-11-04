@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { formatSignedMoney } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -25,7 +26,7 @@ export const Analytics = () => {
     return (
       <div className="min-h-screen bg-gradient-bg p-4 sm:p-6">
         <div className="mx-auto max-w-4xl space-y-4">
-          <Button variant="outline" onClick={() => navigate(-1)}>
+          <Button variant="outline" onClick={() => navigate("/")}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Button>
           <div className="rounded-2xl border border-border bg-gradient-card p-6 text-center text-sm text-muted-foreground">
@@ -47,7 +48,7 @@ export const Analytics = () => {
               {analytics.totalRounds} total rounds
             </p>
           </div>
-          <Button variant="outline" onClick={() => navigate(-1)}>
+          <Button variant="outline" onClick={() => navigate("/")}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Button>
         </div>
@@ -57,7 +58,7 @@ export const Analytics = () => {
             <Card className="rounded-2xl border-border bg-gradient-card p-4">
               <div className="text-xs uppercase text-muted-foreground">Top Earner</div>
               <h3 className="text-lg font-bold text-brand">{analytics.topEarner.name}</h3>
-              <p className="text-sm text-success">+₹{analytics.topEarner.totalEarnings}</p>
+              <p className="text-sm text-success">{formatSignedMoney(analytics.topEarner.totalEarnings)}</p>
             </Card>
           )}
           {analytics.topWinRate && (
@@ -95,7 +96,7 @@ export const Analytics = () => {
                       <div
                         className={`text-sm font-bold ${player.totalEarnings >= 0 ? "text-success" : "text-destructive"}`}
                       >
-                        {player.totalEarnings >= 0 ? "+" : ""}₹{player.totalEarnings}
+                        {formatSignedMoney(player.totalEarnings)}
                       </div>
                     </div>
                     <div>

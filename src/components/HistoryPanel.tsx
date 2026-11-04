@@ -1,4 +1,5 @@
 import { ActionLog } from "@/lib/teenpatti";
+import { formatMoney } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ListOrdered } from "lucide-react";
 
@@ -37,7 +38,7 @@ export const HistoryPanel = ({ log }: Props) => (
               <div className="flex justify-between">
                 <span className="font-medium">{a.playerName}</span>
                 {a.amount !== undefined && (
-                  <span className="text-brand-soft">₹{a.amount}</span>
+                  <span className="text-brand-soft">{formatMoney(a.amount)}</span>
                 )}
               </div>
               <div className="text-muted-foreground">

@@ -4,7 +4,8 @@ import type { StoredSession } from "./storage";
 
 const session: StoredSession = {
   id: "test-123",
-  version: 1,
+  version: 2,
+  status: "completed",
   names: ["Alice", "Bob"],
   boot: 10,
   maxBet: 100,
@@ -26,12 +27,8 @@ const session: StoredSession = {
       { id: "log-2", round: 2, playerName: "Bob", action: "see", ts: 1670000000500 },
     ],
     actionsCount: 2,
-    manualBets: {},
-    manualIteration: 1,
-    manualFolded: [],
-    manualCumulativeBets: {},
-    manualRoundPot: 0,
-    manualWinnerStep: false,
+    manual: { bets: {}, iteration: 1, folded: [], cumulativeBets: {}, winnerStep: false },
+    undo: [],
   },
 };
 

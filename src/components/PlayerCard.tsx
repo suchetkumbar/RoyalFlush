@@ -1,5 +1,5 @@
 import { Player } from "@/lib/teenpatti";
-import { cn } from "@/lib/utils";
+import { cn, formatSignedMoney } from "@/lib/utils";
 
 interface Props {
   player: Player;
@@ -23,7 +23,7 @@ export const PlayerCard = ({ player, isCurrent }: Props) => {
     >
       <span className="font-semibold truncate text-sm block mb-1">{player.name}</span>
       <div className={cn("text-lg font-bold", balanceColor)}>
-        {player.balance >= 0 ? "+" : ""}₹{player.balance}
+        {formatSignedMoney(player.balance)}
       </div>
     </div>
   );
