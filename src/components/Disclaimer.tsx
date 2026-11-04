@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Calculator } from "lucide-react";
+import { Logo } from "./Logo";
 
 interface Props {
   onStart: () => void;
@@ -9,9 +9,7 @@ export const Disclaimer = ({ onStart }: Props) => (
   <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-bg">
     <div className="max-w-md w-full text-center space-y-6 bg-gradient-card border border-border rounded-2xl p-8 shadow-glow">
       <div className="flex justify-center">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-brand flex items-center justify-center shadow-soft">
-          <Calculator className="w-8 h-8 text-primary-foreground" />
-        </div>
+        <Logo className="h-16 w-16 drop-shadow-md" />
       </div>
       <div>
         <h1 className="text-3xl font-bold text-foreground">RoyalFlush</h1>

@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -66,7 +67,10 @@ export default {
         warn: "hsl(var(--warn))",
         info: "hsl(var(--info))",
         blind: "hsl(var(--blind))",
-        seen: "hsl(var(--seen))",
+        seen: {
+          DEFAULT: "hsl(var(--seen))",
+          foreground: "hsl(var(--seen-foreground))",
+        },
         folded: "hsl(var(--folded))",
         owed: "hsl(var(--owed))",
         "owed-to": "hsl(var(--owed-to))",
@@ -109,5 +113,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;

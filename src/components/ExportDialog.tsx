@@ -64,7 +64,7 @@ export const ExportDialog = ({ open, session, onOpenChange }: Props) => {
         {session ? (
           <div className="space-y-4 py-2">
             <div className="rounded-xl border border-border bg-background/80 p-4 text-sm text-muted-foreground">
-              Exported file data includes the player state, action log, round history, and current game progress.
+              The JSON file holds the full game (players, action log, rounds) and can be re-imported from Saved Sessions on any device.
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2">

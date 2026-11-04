@@ -1,34 +1,36 @@
 import { useEffect } from "react";
-import { useTheme } from "next-themes";
+import { THEME_SHORTCUT_LABEL, useThemeSwitch } from "@/hooks/useThemeSwitch";
 import { Button } from "@/components/ui/button";
 import { Moon, SunMedium } from "lucide-react";
 
-export const ThemeToggle = () => {
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const currentTheme = theme === "system" ? resolvedTheme : theme;
-
+/** Registers the global theme shortcut once (mounted in App). */
+export const ThemeShortcut = () => {
+  const { toggle } = useThemeSwitch();
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "j") {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "l") {
         event.preventDefault();
-        setTheme(currentTheme === "dark" ? "light" : "dark");
+        toggle();
       }
     };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [toggle]);
+  return null;
+};
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentTheme, setTheme]);
-
+export const ThemeToggle = () => {
+  const { isDark, toggle } = useThemeSwitch();
   return (
     <Button
       variant="outline"
       size="sm"
-      onClick={() => setTheme(currentTheme === "dark" ? "light" : "dark")}
-      title="Toggle theme (Ctrl/Cmd+J)"
+      onClick={toggle}
+      title={`Toggle theme (${THEME_SHORTCUT_LABEL})`}
       className="flex items-center gap-2"
     >
-      {currentTheme === "dark" ? <SunMedium className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-      {currentTheme === "dark" ? "Light" : "Dark"}
+      {isDark ? <SunMedium className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      {isDark ? "Light" : "Dark"}
     </Button>
   );
 };

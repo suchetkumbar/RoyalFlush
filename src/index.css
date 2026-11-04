@@ -7,7 +7,80 @@ All colors MUST be HSL.
 */
 
 @layer base {
+  /* Light theme: warm card-room cream with a deep saffron brand. All text tokens meet WCAG AA on cards. */
   :root {
+    --background: 36 33% 96%;
+    --foreground: 230 25% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 230 25% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 25% 12%;
+
+    --primary: 20 85% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 36 22% 89%;
+    --secondary-foreground: 230 25% 15%;
+
+    --muted: 36 20% 91%;
+    --muted-foreground: 230 10% 38%;
+
+    --accent: 280 55% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 36 16% 84%;
+    --input: 36 16% 84%;
+    --ring: 20 85% 40%;
+
+    --brand: 20 85% 40%;
+    --brand-dark: 15 80% 32%;
+    --brand-soft: 20 60% 35%;
+    --success: 142 70% 28%;
+    --warn: 40 90% 35%;
+    --info: 200 80% 35%;
+    --blind: 220 65% 45%;
+    --seen: 280 50% 48%;
+    --seen-foreground: 0 0% 100%;
+    --folded: 0 0% 42%;
+    --owed: 0 70% 42%;
+    --owed-to: 142 70% 28%;
+
+    --gradient-bg: radial-gradient(ellipse at top, hsl(36 45% 98%) 0%, hsl(36 25% 91%) 100%);
+    --gradient-brand: linear-gradient(135deg, hsl(var(--brand)) 0%, hsl(var(--brand-dark)) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(36 30% 97%) 100%);
+    --shadow-soft: 0 4px 16px -4px hsl(30 30% 25% / 0.15);
+    --shadow-glow: 0 0 24px hsl(var(--brand) / 0.25);
+
+    /* Chart categorical slots (validated: CVD-safe adjacent order, light surface #fff). Fixed order, never cycled. */
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    --series-3: #1baf7a;
+    --series-4: #eda100;
+    --series-5: #e87ba4;
+    --series-6: #008300;
+    --series-7: #6250d6;
+    --series-8: #e34948;
+    --chart-grid: #e7e3dc;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* Dark theme: the original RoyalFlush navy table with saffron brand. */
+  .dark {
     --background: 230 25% 10%;
     --foreground: 220 20% 95%;
 
@@ -27,9 +100,9 @@ All colors MUST be HSL.
     --muted-foreground: 220 12% 65%;
 
     --accent: 280 70% 65%;
-    --accent-foreground: 220 20% 98%;
+    --accent-foreground: 230 25% 10%;
 
-    --destructive: 0 75% 55%;
+    --destructive: 0 70% 48%;
     --destructive-foreground: 220 20% 98%;
 
     --border: 230 18% 22%;
@@ -44,8 +117,9 @@ All colors MUST be HSL.
     --info: 200 80% 60%;
     --blind: 220 70% 62%;
     --seen: 280 60% 65%;
-    --folded: 0 0% 38%;
-    --owed: 0 75% 60%;
+    --seen-foreground: 230 25% 10%;
+    --folded: 0 0% 55%;
+    --owed: 0 80% 68%;
     --owed-to: 142 65% 48%;
 
     --gradient-bg: radial-gradient(ellipse at top, hsl(230 30% 16%) 0%, hsl(230 25% 8%) 100%);
@@ -54,53 +128,17 @@ All colors MUST be HSL.
     --shadow-soft: 0 4px 16px -4px hsl(230 50% 4% / 0.5);
     --shadow-glow: 0 0 24px hsl(var(--brand) / 0.35);
 
-    --radius: 0.5rem;
+    /* Chart categorical slots, dark steps (validated on #1c1e2b, all >= 3:1). */
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #008300;
+    --series-7: #9085e9;
+    --series-8: #e66767;
+    --chart-grid: #2a2d3d;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -121,3 +159,24 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Respect users who ask for less motion: no transitions, animations or smooth scrolling. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Windows High Contrast / forced colours: keep the current-turn and status cues visible. */
+@media (forced-colors: active) {
+  [aria-current="true"] {
+    outline: 3px solid Highlight;
+    outline-offset: 2px;
+  }
+}
+
